@@ -117,19 +117,29 @@ Documentos/     Documentação técnica e datasheets de hardware
 Requer [PlatformIO](https://platformio.org/) instalado.
 
 ```bash
+# Listar as portas disponíveis (a porta varia conforme o dispositivo/máquina)
+pio device list
+
 # Compilar Sensor A
 cd sensor_a && pio run
 
 # Compilar Sensor B
 cd sensor_b && pio run
 
-# Upload firmware (Sensor A na COM6, Sensor B na COM3)
-cd sensor_a && pio run -t upload --upload-port COM6
-cd sensor_b && pio run -t upload --upload-port COM3
+# Upload firmware — o PlatformIO detecta a porta automaticamente.
+# Se houver mais de um dispositivo conectado, informe a porta com --upload-port
+cd sensor_a && pio run -t upload
+cd sensor_b && pio run -t upload
+# Exemplo com porta explícita (substitua pela sua):
+#   pio run -t upload --upload-port COM6        (Windows)
+#   pio run -t upload --upload-port /dev/ttyUSB0 (Linux/macOS)
 
 # Upload áudios para SPIFFS (ATENÇÃO: apaga tudo no SPIFFS!)
-cd sensor_a && pio run -t uploadfs --upload-port COM6
+cd sensor_a && pio run -t uploadfs
 ```
+
+> A porta serial **não é fixa** — depende de qual dispositivo está conectado e em qual USB.
+> Use `pio device list` para descobrir, ou deixe o PlatformIO detectar automaticamente quando só um dispositivo estiver plugado.
 
 > **IMPORTANTE:** Sempre faça backup do SPIFFS antes de `uploadfs` — o comando apaga todos os arquivos (WAVs e JSONs de gestos).
 
