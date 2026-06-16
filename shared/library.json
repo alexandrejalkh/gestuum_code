@@ -1,0 +1,7 @@
+{
+    "name": "gestuum-shared",
+    "version": "1.0.0",
+    "description": "GESTUUM shared library — constants and ESP-NOW protocol definitions",
+    "frameworks": "arduino",
+    "platforms": "espressif32"
+}

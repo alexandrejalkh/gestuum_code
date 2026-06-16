@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<!-- FIX: Removido user-scalable=no — impedia zoom para usuarios com baixa visao.
+     Ironia: app de acessibilidade que bloqueava recurso de acessibilidade. -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GESTUUM — Configurar</title>
+<meta name="description" content="Configure seu GESTUUM em poucos minutos, diretamente pelo navegador.">
+<!-- esp-web-tools pinado @10.2.1 + SRI hash (sprint F fix supply chain).
+     Hash do unpkg COM ?module e' diferente do arquivo cru (unpkg faz rewrite
+     de imports pra ES modules absolutos). Hash computado pelo proprio Chrome
+     em 2026-05-16. TODO pos-feira: self-host em app/vendor/ pra SRI estavel
+     (unpkg pode mudar rewrite a qualquer momento). -->
+<script type="module"
+        src="https://unpkg.com/esp-web-tools@10.2.1/dist/web/install-button.js?module"
+        integrity="sha384-2Ea4WL8tjFb0qQKUqBoX45KlPVoUgL+Z3zUqsD0MHmtJ3faDbfNyZulLg/LfYDUZ"
+        crossorigin="anonymous"></script>
+<link rel="stylesheet" href="css/variables.css">
+<link rel="stylesheet" href="css/pwa.css">
+<script src="js/pwa.js" defer></script>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --green:#A8D5BA;--green-dark:#7FBF9B;--green-light:#C2E6D0;
+    --blue:#A7C7E7;--blue-dark:#8BB3D9;--blue-light:#BFD8EF;
+    --teal:#009688;
+    --warm-dark:#2D3748;--warm-medium:#4A5568;
+    --red:#E57373;--orange:#FFB74D;
+    --bg:#F9FAFB;--bg-alt:#F0F7F4;--card:#FFFFFF;--text:#2D3748;--text-secondary:#718096;
+    --border:#E2E8F0;--shadow:0 2px 12px rgba(45,55,72,.06);
+    --radius:16px;--radius-sm:10px;
+    --transition:0.35s cubic-bezier(.4,0,.2,1);
+  }
+  html{font-size:16px;-webkit-tap-highlight-color:transparent}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;background:var(--bg);color:var(--text);min-height:100dvh;display:flex;flex-direction:column;align-items:center;overflow-x:hidden}
+
+  /* ---- Browser Warning ---- */
+  .browser-warning{display:none;position:fixed;top:0;left:0;right:0;z-index:1000;background:#FFF8E1;border-bottom:2px solid var(--orange);padding:14px 20px;text-align:center;font-size:.9rem;color:#E65100;animation:slideDown .4s ease}
+  .browser-warning.visible{display:block}
+  .browser-warning strong{display:block;margin-bottom:4px}
+  @keyframes slideDown{from{transform:translateY(-100%)}to{transform:translateY(0)}}
+
+  /* ---- Layout ---- */
+  .container{width:100%;max-width:640px;padding:0 20px 40px;flex:1}
+
+  /* ---- Step Indicator ---- */
+  .steps-indicator{display:flex;align-items:center;justify-content:center;padding:28px 0 8px;gap:0}
+  .step-dot{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:700;border:2.5px solid var(--border);color:var(--text-secondary);background:var(--card);transition:var(--transition);position:relative;z-index:1;flex-shrink:0}
+  .step-dot.active{border-color:var(--green);color:var(--warm-dark);background:var(--green);box-shadow:0 0 0 4px rgba(168,213,186,.3)}
+  .step-dot.done{border-color:var(--green-dark);color:#fff;background:var(--green-dark)}
+  .step-line{width:48px;height:3px;background:var(--border);transition:var(--transition);flex-shrink:0}
+  .step-line.done{background:var(--green-dark)}
+
+  /* ---- Sections ---- */
+  .section{display:none;animation:fadeSlideIn .45s ease both}
+  .section.active{display:block}
+  @keyframes fadeSlideIn{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:translateX(0)}}
+
+  /* ---- Typography ---- */
+  h1{font-size:1.6rem;font-weight:800;color:var(--warm-dark);margin-bottom:6px;line-height:1.25}
+  h2{font-size:1.25rem;font-weight:700;color:var(--text);margin-bottom:4px}
+  .subtitle{font-size:1rem;color:var(--text-secondary);margin-bottom:24px;line-height:1.5}
+  .section-title{font-size:1.15rem;font-weight:700;margin-bottom:16px;color:var(--text)}
+
+  /* ---- Logo ---- */
+  .logo-area{text-align:center;padding:36px 0 12px}
+  .logo-area svg{width:160px;height:auto}
+  .logo-area .tagline{font-size:.95rem;color:var(--teal);font-weight:600;letter-spacing:.5px;margin-top:6px}
+
+  /* ---- Requirements ---- */
+  .requirements{list-style:none;margin:0 0 28px;padding:0}
+  .requirements li{display:flex;align-items:center;gap:10px;padding:10px 0;font-size:.95rem;border-bottom:1px solid var(--border)}
+  .requirements li:last-child{border-bottom:none}
+  .requirements .check{color:var(--green-dark);font-size:1.15rem;flex-shrink:0}
+
+  /* ---- Buttons ---- */
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:16px 36px;border:none;border-radius:var(--radius-sm);font-size:1.05rem;font-weight:700;cursor:pointer;transition:var(--transition);-webkit-user-select:none;user-select:none;text-decoration:none}
+  .btn-primary{background:var(--green);color:var(--warm-dark);box-shadow:0 4px 14px rgba(168,213,186,.4)}
+  .btn-primary:hover{background:var(--green-dark);color:#fff;box-shadow:0 6px 20px rgba(168,213,186,.5);transform:translateY(-1px)}
+  .btn-primary:active{transform:translateY(0);box-shadow:0 2px 8px rgba(168,213,186,.3)}
+  .btn-secondary{background:transparent;color:var(--warm-dark);border:2px solid var(--blue)}
+  .btn-secondary:hover{background:rgba(167,199,231,.15)}
+  .btn-success{background:var(--green-dark);color:#fff;box-shadow:0 4px 14px rgba(127,191,155,.35)}
+  .btn-success:hover{background:#6BAF8A}
+  .btn-block{width:100%;text-align:center}
+  .btn-group{display:flex;gap:12px;flex-wrap:wrap;margin-top:20px}
+
+  /* ---- Device Cards ---- */
+  .device-cards{display:flex;flex-direction:column;gap:14px}
+  .device-card{background:var(--card);border:2.5px solid var(--border);border-radius:var(--radius);padding:20px;cursor:pointer;transition:var(--transition);position:relative;display:flex;gap:16px;align-items:flex-start}
+  .device-card:hover{border-color:var(--green);box-shadow:var(--shadow);transform:translateY(-2px)}
+  .device-card.selected{border-color:var(--green-dark);box-shadow:0 0 0 3px rgba(168,213,186,.25),var(--shadow)}
+  .device-card .icon-area{width:52px;height:52px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.6rem}
+  .device-card .icon-area.primary{background:rgba(168,213,186,.2);color:var(--green-dark)}
+  .device-card .icon-area.secondary{background:rgba(167,199,231,.2);color:var(--blue-dark)}
+  .device-card .icon-area.optional{background:rgba(255,183,77,.15);color:var(--orange)}
+  .device-card .card-body{flex:1;min-width:0}
+  .device-card .card-title{font-weight:700;font-size:1rem;margin-bottom:4px}
+  .device-card .card-desc{font-size:.88rem;color:var(--text-secondary);line-height:1.45}
+  .device-card .card-hw{font-size:.8rem;color:var(--text-secondary);margin-top:4px;font-style:italic}
+  .badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+  .badge-required{background:rgba(168,213,186,.2);color:var(--green-dark)}
+  .badge-optional{background:rgba(255,183,77,.15);color:#E65100}
+
+  /* ---- Voice Cards ---- */
+  .voice-cards{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
+  .voice-card{background:var(--card);border:2.5px solid var(--border);border-radius:var(--radius);padding:18px 14px;text-align:center;cursor:pointer;transition:var(--transition)}
+  .voice-card:hover{border-color:var(--green);box-shadow:var(--shadow)}
+  .voice-card.selected{border-color:var(--green-dark);box-shadow:0 0 0 3px rgba(168,213,186,.25)}
+  .voice-card .voice-icon{font-size:2.2rem;margin-bottom:6px}
+  .voice-card .voice-name{font-weight:700;font-size:.95rem;margin-bottom:2px}
+  .voice-card .voice-sample{display:inline-flex;align-items:center;gap:4px;margin-top:8px;padding:6px 14px;border-radius:20px;background:rgba(168,213,186,.15);color:var(--green-dark);font-size:.8rem;font-weight:600;border:none;cursor:pointer;transition:var(--transition)}
+  .voice-card .voice-sample:hover{background:rgba(168,213,186,.3)}
+  .voice-card .voice-sample.playing{background:var(--green-dark);color:#fff}
+
+  /* ---- Language Chips ---- */
+  .lang-section{margin-top:8px;margin-bottom:24px;opacity:.55;pointer-events:none;transition:opacity .3s ease}
+  .lang-section.enabled{opacity:1;pointer-events:auto}
+  .lang-section .lang-title{font-size:.95rem;font-weight:700;color:var(--text);margin-bottom:10px}
+  .lang-section .lang-subtitle{font-size:.82rem;color:var(--text-secondary);margin-bottom:14px;line-height:1.45}
+  .lang-chips{display:flex;flex-wrap:wrap;gap:8px}
+  .lang-chip{background:var(--card);border:2px solid var(--border);border-radius:24px;padding:10px 16px;font-size:.9rem;font-weight:600;color:var(--text);cursor:pointer;transition:var(--transition);display:inline-flex;align-items:center;gap:6px;-webkit-user-select:none;user-select:none}
+  .lang-chip:hover{border-color:var(--green);box-shadow:var(--shadow)}
+  .lang-chip.selected{border-color:var(--green-dark);background:var(--green-light);color:var(--warm-dark);box-shadow:0 0 0 3px rgba(168,213,186,.25)}
+  .lang-chip .lang-flag{font-size:1.05rem}
+
+  /* ---- Install Section ---- */
+  .install-instruction{background:var(--card);border-radius:var(--radius);padding:24px;text-align:center;box-shadow:var(--shadow);margin-bottom:20px}
+  .install-instruction svg{width:160px;height:auto;margin:16px auto}
+  .install-instruction p{font-size:.95rem;color:var(--text-secondary);line-height:1.5;margin-top:8px}
+  .install-device-name{font-weight:700;color:var(--green-dark)}
+
+  esp-web-install-button{display:block;margin:20px auto;text-align:center}
+  esp-web-install-button button[slot="activate"]{
+    display:inline-flex;align-items:center;justify-content:center;gap:10px;
+    padding:18px 40px;border:none;border-radius:var(--radius-sm);
+    font-size:1.1rem;font-weight:700;cursor:pointer;
+    background:var(--green);color:var(--warm-dark);
+    box-shadow:0 4px 18px rgba(168,213,186,.4);
+    transition:var(--transition);
+  }
+  esp-web-install-button button[slot="activate"]:hover{background:var(--green-dark);color:#fff;transform:translateY(-2px);box-shadow:0 6px 24px rgba(168,213,186,.5)}
+  esp-web-install-button [slot="unsupported"]{color:var(--red);font-weight:600;text-align:center;padding:16px;font-size:.95rem}
+
+  .manifest-note{font-size:.78rem;color:var(--text-secondary);text-align:center;margin-top:8px;font-style:italic}
+
+  /* ---- Success ---- */
+  .success-card{background:var(--card);border-radius:var(--radius);padding:32px 24px;text-align:center;box-shadow:var(--shadow);position:relative;overflow:hidden}
+  .success-icon{font-size:3.5rem;margin-bottom:8px;animation:popIn .5s ease both}
+  @keyframes popIn{0%{transform:scale(0);opacity:0}60%{transform:scale(1.15)}100%{transform:scale(1);opacity:1}}
+  .success-card h2{color:var(--green-dark);font-size:1.25rem;margin-bottom:12px}
+  .success-card p{color:var(--text-secondary);font-size:.93rem;line-height:1.5;margin-bottom:16px}
+  .next-steps{text-align:left;margin:16px 0;padding:16px;background:var(--bg-alt);border-radius:var(--radius-sm)}
+  .next-steps .step-item{display:flex;align-items:flex-start;gap:10px;padding:8px 0;font-size:.9rem}
+  .next-steps .step-num{width:24px;height:24px;border-radius:50%;background:var(--green-dark);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;flex-shrink:0}
+
+  /* Confetti */
+  .confetti-container{position:absolute;top:0;left:0;right:0;height:100%;pointer-events:none;overflow:hidden}
+  .confetti-piece{position:absolute;width:10px;height:10px;border-radius:2px;top:-20px;animation:confettiFall 3s ease-in forwards}
+  @keyframes confettiFall{
+    0%{transform:translateY(0) rotate(0deg);opacity:1}
+    100%{transform:translateY(400px) rotate(720deg);opacity:0}
+  }
+
+  /* ---- FAQ ---- */
+  .faq{margin-top:36px}
+  .faq h2{margin-bottom:12px}
+  .faq-item{border-bottom:1px solid var(--border)}
+  .faq-q{width:100%;background:none;border:none;padding:16px 0;display:flex;align-items:center;justify-content:space-between;font-size:.95rem;font-weight:600;color:var(--text);cursor:pointer;text-align:left;gap:12px}
+  .faq-q::after{content:'+';font-size:1.3rem;color:var(--text-secondary);transition:var(--transition);flex-shrink:0}
+  .faq-q.open::after{content:'\2212';color:var(--green-dark)}
+  .faq-a{max-height:0;overflow:hidden;transition:max-height .35s ease,padding .35s ease;font-size:.9rem;color:var(--text-secondary);line-height:1.55}
+  /* FIX: max-height aumentado — 200px cortava respostas longas */
+  .faq-a.open{max-height:500px;padding-bottom:16px}
+
+  /* ---- Footer ---- */
+  footer{text-align:center;padding:28px 20px;font-size:.82rem;color:var(--text-secondary);border-top:1px solid var(--border);width:100%;max-width:640px}
+  footer strong{color:var(--warm-dark)}
+
+  /* ---- Back link ---- */
+  .back-link{display:inline-flex;align-items:center;gap:6px;font-size:.9rem;color:var(--text-secondary);cursor:pointer;border:none;background:none;padding:8px 0;margin-bottom:12px;transition:var(--transition)}
+  .back-link:hover{color:var(--green-dark)}
+
+  /* ---- Utilities ---- */
+  .text-center{text-align:center}
+  .mt-12{margin-top:12px}
+  .mt-20{margin-top:20px}
+  .mb-8{margin-bottom:8px}
+
+  /* ---- Help Box (pre-connection guidance) ---- */
+  .help-box{background:#FEFCE8;border-radius:var(--radius-sm);border-left:4px solid var(--orange);padding:18px 20px;margin-bottom:20px}
+  .help-box h3{font-size:1rem;font-weight:700;margin-bottom:12px;color:#D97706}
+  .help-item{display:flex;align-items:flex-start;gap:10px;padding:6px 0;font-size:.9rem;line-height:1.45;color:var(--text)}
+  .help-icon{font-size:1.1rem;flex-shrink:0;margin-top:1px}
+
+  /* ---- Permission Note ---- */
+  .permission-note{font-size:.85rem;color:var(--warm-medium);text-align:center;margin:16px 0;padding:12px 16px;background:var(--bg-alt);border-radius:var(--radius-sm);line-height:1.5}
+  .permission-note::before{content:'\2139\FE0F ';font-size:1rem}
+
+  /* ---- Device Visual Tip ---- */
+  .device-tip{font-size:.82rem;color:var(--warm-dark);font-weight:600;margin-top:6px;padding:4px 8px;background:rgba(168,213,186,.12);border-radius:6px;display:inline-block}
+
+  /* ---- Dev note (hidden from users) ---- */
+  .dev-note{display:none}
+
+  /* ---- Responsive ---- */
+  @media(min-width:480px){
+    .voice-cards{grid-template-columns:1fr 1fr 1fr 1fr}
+  }
+</style>
+</head>
+<body class="pwa" data-pwa-app="Instalador">
+
+<!-- Header padrao do PWA (injetado por js/pwa.js) -->
+<div id="pwa-header"></div>
+
+<!-- Developer note (hidden) -->
+<!-- Para gerar os binarios: cd gestuum && pio run -->
+<!-- Manifest files esperados em: app/manifests/*.json -->
+
+<!-- Browser Warning -->
+<div class="browser-warning" id="browserWarning">
+  <strong>Navegador diferente detectado</strong>
+  Para configurar seu GESTUUM, use o <b>Google Chrome</b> (computador ou Android). Abra esta p&aacute;gina por l&aacute; e tudo vai funcionar direitinho.
+</div>
+
+<!-- Step Indicator -->
+<div class="steps-indicator" id="stepsIndicator">
+  <div class="step-dot active" data-step="1">1</div>
+  <div class="step-line" data-line="1"></div>
+  <div class="step-dot" data-step="2">2</div>
+  <div class="step-line" data-line="2"></div>
+  <div class="step-dot" data-step="3">3</div>
+  <div class="step-line" data-line="3"></div>
+  <div class="step-dot" data-step="4">4</div>
+</div>
+<div id="deviceProgress" style="text-align:center;font-size:.8rem;color:var(--text-secondary);margin-top:4px">
+  Dispositivos configurados: 0 de 2
+</div>
+
+<div class="container">
+
+  <!-- ====== STEP 1: Bem-vindo ====== -->
+  <section class="section active" id="step1">
+    <div class="logo-area">
+      <img src="logo_nova.png" alt="GESTUUM" style="max-width:250px">
+      <div style="font-size:14px;color:#009688;letter-spacing:2px;margin-top:8px;font-weight:400">SEUS GESTOS, SUA VOZ</div>
+    </div>
+
+    <h1 class="text-center" style="margin-bottom:8px">Configurar seu GESTUUM</h1>
+    <p class="subtitle text-center">Vamos configurar seu GESTUUM em poucos minutos. Tudo acontece aqui no navegador, sem complica&ccedil;&atilde;o nenhuma.</p>
+
+    <p class="section-title">Antes de come&ccedil;ar, separe:</p>
+    <ul class="requirements">
+      <li><span class="check">&#10003;</span> Navegador <b>Google Chrome</b> (computador ou Android)</li>
+      <li><span class="check">&#10003;</span> Cabo USB-C <b>de dados</b> (veja o aviso abaixo)</li>
+      <li><span class="check">&#10003;</span> Seu dispositivo GESTUUM em m&atilde;os</li>
+    </ul>
+
+    <!-- Aviso sobre cabo de dados vs carga -->
+    <div style="background:#FFF3E0;border-left:4px solid #FF9800;border-radius:var(--radius-sm);padding:16px 18px;margin-bottom:20px">
+      <div style="font-weight:700;color:#E65100;margin-bottom:8px;font-size:.95rem">&#9888; Aten&ccedil;&atilde;o ao cabo USB-C!</div>
+      <div style="font-size:.88rem;color:#5D4037;line-height:1.55">
+        <b>Nem todo cabo USB-C funciona.</b> Existem dois tipos:
+        <div style="display:flex;gap:12px;margin:12px 0">
+          <div style="flex:1;background:#E8F5E9;padding:12px;border-radius:8px;text-align:center">
+            <div style="font-size:1.3rem">&#9989;</div>
+            <div style="font-weight:700;color:#2E7D32;font-size:.85rem">Cabo de DADOS</div>
+            <div style="font-size:.78rem;color:#4E342E;margin-top:4px">Transfere arquivos e carrega. Funciona com o GESTUUM.</div>
+          </div>
+          <div style="flex:1;background:#FFEBEE;padding:12px;border-radius:8px;text-align:center">
+            <div style="font-size:1.3rem">&#10060;</div>
+            <div style="font-weight:700;color:#C62828;font-size:.85rem">Cabo s&oacute; de CARGA</div>
+            <div style="font-size:.78rem;color:#4E342E;margin-top:4px">S&oacute; carrega bateria. N&Atilde;O funciona com o GESTUUM.</div>
+          </div>
+        </div>
+        <div style="font-size:.82rem;color:#795548"><b>Como saber?</b> Se voc&ecirc; j&aacute; usou o cabo para transferir fotos do celular para o computador, &eacute; um cabo de dados. Cabos que vieram com carregadores baratos geralmente s&atilde;o s&oacute; de carga. Na d&uacute;vida, use o cabo que veio com o seu celular (Samsung, Motorola, etc.).</div>
+      </div>
+    </div>
+
+    <!-- Compatibilidade de plataformas -->
+    <div style="background:var(--bg-alt);border-radius:var(--radius-sm);padding:16px 18px;margin-bottom:20px">
+      <div style="font-weight:700;color:var(--text);margin-bottom:10px;font-size:.95rem">&#128187; Onde funciona</div>
+      <div style="font-size:.85rem;line-height:1.7">
+        <div style="display:flex;align-items:center;gap:8px;padding:4px 0"><span style="color:#4CAF50;font-weight:700">&#10003;</span> <b>Windows 10+</b> com Google Chrome</div>
+        <div style="display:flex;align-items:center;gap:8px;padding:4px 0"><span style="color:#4CAF50;font-weight:700">&#10003;</span> <b>macOS 12+</b> com Google Chrome</div>
+        <div style="display:flex;align-items:center;gap:8px;padding:4px 0"><span style="color:#4CAF50;font-weight:700">&#10003;</span> <b>Linux</b> com Google Chrome</div>
+        <div style="display:flex;align-items:center;gap:8px;padding:4px 0"><span style="color:#4CAF50;font-weight:700">&#10003;</span> <b>Chromebook</b></div>
+        <div style="display:flex;align-items:center;gap:8px;padding:4px 0"><span style="color:#4CAF50;font-weight:700">&#10003;</span> <b>Android 9+</b> com Chrome (precisa adaptador USB-C OTG)</div>
+        <div style="display:flex;align-items:center;gap:8px;padding:6px 0;margin-top:4px;border-top:1px solid var(--border)"><span style="color:#E57373;font-weight:700">&#10007;</span> <b>iPhone / iPad</b> — Safari n&atilde;o suporta conex&atilde;o USB</div>
+        <div style="display:flex;align-items:center;gap:8px;padding:4px 0"><span style="color:#E57373;font-weight:700">&#10007;</span> <b>Firefox</b> &mdash; nenhuma plataforma</div>
+      </div>
+    </div>
+
+    <div class="text-center">
+      <button class="btn btn-primary btn-block" onclick="goToStep(2)">Vamos l&aacute;</button>
+    </div>
+  </section>
+
+  <!-- ====== STEP 2: Selecionar Dispositivo ====== -->
+  <section class="section" id="step2">
+    <button class="back-link" onclick="goToStep(1)">&larr; Voltar</button>
+    <p class="section-title">Qual dispositivo está conectado?</p>
+    <p class="subtitle">Olhe para o dispositivo que está com você agora e escolha abaixo.</p>
+
+    <div class="device-cards">
+      <!-- Sensor Principal -->
+      <!-- FIX: role="button" + tabindex="0" para acessibilidade por teclado -->
+      <div class="device-card" onclick="selectDevice('sensor_a')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectDevice('sensor_a')}" role="button" tabindex="0" id="card-sensor_a" style="border-color:var(--green)">
+        <div class="icon-area primary">
+          <!-- SVG: rectangular device with bump on top (speaker) -->
+          <svg width="52" height="52" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Speaker bump on top -->
+            <rect x="18" y="8" width="28" height="12" rx="4" fill="#A8D5BA" opacity=".5"/>
+            <text x="32" y="17" text-anchor="middle" font-size="6" fill="#2D3748" font-weight="600">alto-falante</text>
+            <!-- Main body -->
+            <rect x="14" y="20" width="36" height="36" rx="6" fill="#F0F7F4" stroke="#A8D5BA" stroke-width="2.5"/>
+            <!-- Screen -->
+            <rect x="20" y="26" width="24" height="16" rx="3" fill="#C2E6D0"/>
+            <!-- Button -->
+            <circle cx="32" cy="49" r="3" fill="#A8D5BA" opacity=".6"/>
+          </svg>
+        </div>
+        <div class="card-body">
+          <div class="card-title">Sensor Principal (M&atilde;o Esquerda)</div>
+          <div class="card-desc">&Eacute; o sensor com uma pe&ccedil;a encaixada no topo (alto-falante).</div>
+          <div class="device-tip">Dica: &Eacute; o &uacute;nico que tem uma pe&ccedil;a extra no topo!</div>
+          <span class="badge badge-required mt-12">Obrigat&oacute;rio</span>
+        </div>
+      </div>
+
+      <!-- Sensor Secundario -->
+      <div class="device-card" onclick="selectDevice('sensor_b')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectDevice('sensor_b')}" role="button" tabindex="0" id="card-sensor_b" style="border-color:var(--blue)">
+        <div class="icon-area secondary">
+          <!-- SVG: rectangular device WITHOUT bump, clean top -->
+          <svg width="52" height="52" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Main body only - no bump -->
+            <rect x="14" y="14" width="36" height="36" rx="6" fill="#EBF4FB" stroke="#A7C7E7" stroke-width="2.5"/>
+            <!-- Screen -->
+            <rect x="20" y="20" width="24" height="16" rx="3" fill="#BFD8EF"/>
+            <!-- Button -->
+            <circle cx="32" cy="43" r="3" fill="#A7C7E7" opacity=".6"/>
+          </svg>
+        </div>
+        <div class="card-body">
+          <div class="card-title">Sensor Secund&aacute;rio (M&atilde;o Direita)</div>
+          <div class="card-desc">&Eacute; o sensor sozinho, sem pe&ccedil;a extra.</div>
+          <div class="device-tip">Dica: Igual ao outro, mas SEM a pe&ccedil;a no topo</div>
+          <span class="badge badge-required mt-12">Obrigat&oacute;rio</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ====== STEP 3: Selecionar Voz ====== -->
+  <section class="section" id="step3">
+    <button class="back-link" onclick="goToStep(2)">&larr; Voltar</button>
+    <p class="section-title">Escolha a voz que mais combina</p>
+    <p class="subtitle">Essa &eacute; a voz que o GESTUUM vai usar para falar com voc&ecirc;. Pode mudar depois, sem problema.</p>
+
+    <div class="voice-cards">
+      <!-- FIX: role="button" + tabindex="0" + onkeydown para acessibilidade por teclado -->
+      <div class="voice-card" onclick="selectVoice('homem')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectVoice('homem')}" role="button" tabindex="0" id="voice-homem">
+        <div class="voice-icon">&#128104;</div>
+        <div class="voice-name">Homem</div>
+        <button class="voice-sample" onclick="event.stopPropagation();playVoiceSample('homem',this)" aria-label="Ouvir amostra de voz masculina">&#9654; Ouvir</button>
+      </div>
+      <div class="voice-card" onclick="selectVoice('mulher')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectVoice('mulher')}" role="button" tabindex="0" id="voice-mulher">
+        <div class="voice-icon">&#128105;</div>
+        <div class="voice-name">Mulher</div>
+        <button class="voice-sample" onclick="event.stopPropagation();playVoiceSample('mulher',this)" aria-label="Ouvir amostra de voz feminina">&#9654; Ouvir</button>
+      </div>
+      <div class="voice-card" onclick="selectVoice('menino')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectVoice('menino')}" role="button" tabindex="0" id="voice-menino">
+        <div class="voice-icon">&#128102;</div>
+        <div class="voice-name">Menino</div>
+        <button class="voice-sample" onclick="event.stopPropagation();playVoiceSample('menino',this)" aria-label="Ouvir amostra de voz de menino">&#9654; Ouvir</button>
+      </div>
+      <div class="voice-card" onclick="selectVoice('menina')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectVoice('menina')}" role="button" tabindex="0" id="voice-menina">
+        <div class="voice-icon">&#128103;</div>
+        <div class="voice-name">Menina</div>
+        <button class="voice-sample" onclick="event.stopPropagation();playVoiceSample('menina',this)" aria-label="Ouvir amostra de voz de menina">&#9654; Ouvir</button>
+      </div>
+    </div>
+
+    <!-- Idioma do audio (sprint F - 2026-05-15) -->
+    <div class="lang-section" id="langSection">
+      <div class="lang-title">Em qual idioma o GESTUUM vai falar?</div>
+      <div class="lang-subtitle">Escolha o idioma do &aacute;udio. Os 43 gestos do vocabul&aacute;rio s&atilde;o iguais em todos os idiomas &mdash; muda s&oacute; a voz que sai pelo alto-falante.</div>
+      <div class="lang-chips" role="radiogroup" aria-label="Selecionar idioma">
+        <button class="lang-chip" type="button" onclick="selectLanguage('pt')" id="lang-pt" role="radio" aria-checked="false"><span class="lang-flag">&#127463;&#127479;</span> Portugu&ecirc;s</button>
+        <button class="lang-chip" type="button" onclick="selectLanguage('en')" id="lang-en" role="radio" aria-checked="false"><span class="lang-flag">&#127482;&#127480;</span> English</button>
+        <button class="lang-chip" type="button" onclick="selectLanguage('es')" id="lang-es" role="radio" aria-checked="false"><span class="lang-flag">&#127466;&#127480;</span> Espa&ntilde;ol</button>
+        <button class="lang-chip" type="button" onclick="selectLanguage('fr')" id="lang-fr" role="radio" aria-checked="false"><span class="lang-flag">&#127467;&#127479;</span> Fran&ccedil;ais</button>
+        <button class="lang-chip" type="button" onclick="selectLanguage('zh')" id="lang-zh" role="radio" aria-checked="false"><span class="lang-flag">&#127464;&#127475;</span> &#20013;&#25991;</button>
+        <button class="lang-chip" type="button" onclick="selectLanguage('ar')" id="lang-ar" role="radio" aria-checked="false"><span class="lang-flag">&#127480;&#127462;</span> &#1593;&#1585;&#1576;&#1610;</button>
+      </div>
+    </div>
+
+    <div class="text-center">
+      <button class="btn btn-primary btn-block" onclick="goToStep(4)" id="btnNextVoice" disabled>Pr&oacute;ximo</button>
+    </div>
+  </section>
+
+  <!-- ====== STEP 4: Conectar e Configurar ====== -->
+  <section class="section" id="step4">
+    <button class="back-link" onclick="goBack()">&larr; Voltar</button>
+    <p class="section-title">Conecte e configure</p>
+
+    <div class="install-instruction">
+      <p class="mb-8">Conecte o <span class="install-device-name" id="installDeviceName">dispositivo</span> ao computador usando o cabo USB-C.</p>
+      <!-- USB Connection illustration -->
+      <svg viewBox="0 0 280 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Ilustra&ccedil;&atilde;o de conex&atilde;o USB">
+        <!-- Cable -->
+        <line x1="90" y1="50" x2="190" y2="50" stroke="#A8D5BA" stroke-width="4" stroke-linecap="round" stroke-dasharray="8 4" opacity="0.6"/>
+        <!-- Device -->
+        <rect x="10" y="25" width="75" height="50" rx="10" fill="#F0F7F4" stroke="#A8D5BA" stroke-width="2"/>
+        <text x="47" y="47" text-anchor="middle" font-size="8" font-weight="700" fill="#2D3748">GESTUUM</text>
+        <text x="47" y="59" text-anchor="middle" font-size="6" fill="#718096">USB-C</text>
+        <rect x="85" y="44" width="12" height="12" rx="2" fill="#A8D5BA"/>
+        <!-- Computer -->
+        <rect x="195" y="20" width="75" height="50" rx="6" fill="#EBF4FB" stroke="#A7C7E7" stroke-width="2"/>
+        <rect x="215" y="70" width="35" height="6" rx="2" fill="#BFD8EF"/>
+        <text x="232" y="50" text-anchor="middle" font-size="9" font-weight="600" fill="#2D3748">Chrome</text>
+        <rect x="183" y="44" width="12" height="12" rx="2" fill="#A7C7E7"/>
+        <!-- Arrow -->
+        <polygon points="160,42 170,50 160,58" fill="#A8D5BA" opacity="0.7"/>
+      </svg>
+      <p>Quando estiver conectado, clique no bot&atilde;o abaixo.</p>
+    </div>
+
+    <div class="help-box">
+      <h3>Antes de conectar:</h3>
+      <div class="help-item">
+        <span class="help-icon">&#128206;</span>
+        <span>Use um <strong>cabo USB-C de dados</strong> (cabos s&oacute; de carga N&Atilde;O funcionam — veja dica no passo 1)</span>
+      </div>
+      <div class="help-item">
+        <span class="help-icon">&#128268;</span>
+        <span>Conecte o cabo na <strong>lateral</strong> do sensor (a entrada pequena)</span>
+      </div>
+      <div class="help-item">
+        <span class="help-icon">&#128187;</span>
+        <span>Conecte a outra ponta em qualquer entrada USB do computador</span>
+      </div>
+      <div class="help-item">
+        <span class="help-icon">&#9989;</span>
+        <span>Quando o navegador pedir permiss&atilde;o, clique em <strong>"Permitir"</strong> &mdash; &eacute; seguro e necess&aacute;rio</span>
+      </div>
+    </div>
+
+    <div class="permission-note">
+      <strong>Tranquilo:</strong> O navegador vai pedir permiss&atilde;o para acessar o dispositivo USB.
+      Clique em <strong>"Permitir"</strong> &mdash; isso &eacute; necess&aacute;rio para a configura&ccedil;&atilde;o e completamente seguro.
+    </div>
+
+    <div id="espInstallContainer" class="text-center">
+      <!-- ESP Web Install button injected dynamically by JS -->
+    </div>
+    <p class="manifest-note" id="manifestNote"></p>
+
+  </section>
+
+  <!-- ====== SUCCESS ====== -->
+  <section class="section" id="stepSuccess">
+    <div class="success-card" id="successCard">
+      <div class="confetti-container" id="confettiContainer"></div>
+      <div class="success-icon">&#10004;&#65039;</div>
+      <h2 id="successTitle">Dispositivo configurado com sucesso!</h2>
+      <p id="successDesc">Tudo certo! Seu dispositivo está pronto.</p>
+
+      <div class="next-steps" id="nextSteps">
+        <!-- Populated dynamically -->
+      </div>
+
+      <div class="btn-group" style="justify-content:center;flex-direction:column;align-items:center">
+        <button class="btn btn-primary btn-block" id="btnNextDevice" onclick="goToStep(2)" style="display:none">Configurar próximo dispositivo</button>
+        <a class="btn btn-success btn-block" href="gestuum-app.html" id="btnOpenApp" style="display:none">Abrir Configurador</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== FAQ ====== -->
+  <div class="faq" id="faqSection">
+    <h2>D&uacute;vidas? A gente te ajuda</h2>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">Qual navegador devo usar?</button>
+      <div class="faq-a">Use o <b>Google Chrome</b> no computador (Windows, macOS ou Linux) ou no <b>Android</b>. Ele tem uma fun&ccedil;&atilde;o especial (Web Serial) que permite conectar com o GESTUUM pelo cabo USB. <b>Firefox, Safari e Samsung Internet</b> n&atilde;o suportam essa fun&ccedil;&atilde;o.</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">Preciso baixar alguma coisa?</button>
+      <div class="faq-a">N&atilde;o! Tudo acontece aqui mesmo no navegador Chrome. N&atilde;o precisa baixar nenhum programa extra. S&oacute; precisa de conex&atilde;o com a internet para abrir esta p&aacute;gina.</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">D&aacute; pra fazer pelo celular Android?</button>
+      <div class="faq-a">Sim! No <b>Android 9 ou superior</b> com <b>Chrome 105+</b>, funciona direitinho. Voc&ecirc; s&oacute; vai precisar de um <b>adaptador USB-C OTG</b> (custa entre R$10 e R$20 em qualquer loja de celular) para conectar o dispositivo ao celular. O Android vai pedir permiss&atilde;o para acessar o USB &mdash; clique em "Permitir".</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">Funciona no iPhone ou iPad?</button>
+      <div class="faq-a"><b>Infelizmente n&atilde;o.</b> A Apple n&atilde;o implementou a tecnologia necess&aacute;ria (Web Serial) no Safari, e o Chrome no iPhone usa o mesmo motor do Safari por dentro. Para configurar o GESTUUM, use um <b>computador</b> ou um <b>celular Android</b>. Ap&oacute;s a configura&ccedil;&atilde;o inicial, o GESTUUM funciona sozinho sem precisar de celular.</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">Meu cabo USB n&atilde;o funciona. O que fa&ccedil;o?</button>
+      <div class="faq-a">O problema mais comum &eacute; usar um <b>cabo s&oacute; de carga</b>. Esses cabos t&ecirc;m apenas 2 fios internos (energia) e n&atilde;o transmitem dados. Voc&ecirc; precisa de um <b>cabo de dados</b> (4 fios internos). <b>Dica r&aacute;pida:</b> se voc&ecirc; j&aacute; usou o cabo para transferir fotos ou arquivos do celular para o computador, &eacute; um cabo de dados. Cabos que vieram com carregadores baratos de tomada geralmente s&atilde;o s&oacute; de carga. Use o cabo original do seu celular Samsung, Motorola, Xiaomi, etc.</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">D&aacute; pra configurar por Bluetooth sem cabo?</button>
+      <div class="faq-a">A <b>configura&ccedil;&atilde;o inicial</b> (instala&ccedil;&atilde;o do firmware e da voz) <b>precisa do cabo USB</b> &mdash; s&atilde;o ~8 MB de dados, que por Bluetooth levariam mais de 20 minutos e seria inst&aacute;vel. Por&eacute;m, <b>ap&oacute;s a configura&ccedil;&atilde;o inicial</b>, voc&ecirc; pode usar o <b>Configurador GESTUUM</b> por Bluetooth para ajustes r&aacute;pidos como trocar perfis, treinar gestos e ajustar o n&iacute;vel de sensibilidade &mdash; tudo sem cabo, direto pelo celular Android ou computador.</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">E se algo der errado durante a configura&ccedil;&atilde;o?</button>
+      <div class="faq-a">Sem p&acirc;nico! <b>1)</b> Desconecte o cabo USB. <b>2)</b> Espere 5 segundos. <b>3)</b> Reconecte e tente de novo. Se o dispositivo n&atilde;o aparecer na lista, verifique: o cabo &eacute; de dados? Tente outra entrada USB. No Windows, pode ser necess&aacute;rio instalar o driver CP210x (o Chrome geralmente faz isso automaticamente).</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">Posso trocar a voz depois?</button>
+      <div class="faq-a">Claro! Voc&ecirc; pode refazer a configura&ccedil;&atilde;o escolhendo outra voz aqui mesmo, ou trocar pelo <b>Configurador GESTUUM</b> (via cabo USB &mdash; a troca de voz envia ~6 MB de &aacute;udio, ent&atilde;o precisa do cabo). Ajustes menores como perfis e treino de gestos funcionam por Bluetooth.</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">Quanto tempo leva a configura&ccedil;&atilde;o?</button>
+      <div class="faq-a">Cada dispositivo leva entre <b>1 e 3 minutos</b> pelo cabo USB. O Sensor Principal (com voz) &eacute; o mais demorado porque transfere os arquivos de &aacute;udio (~6 MB). O Sensor Secund&aacute;rio &eacute; mais r&aacute;pido (~30 segundos). No total, configurar os 2 dispositivos leva uns <b>3 a 5 minutos</b>.</div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <strong>GESTUUM</strong> &mdash; Seus gestos, sua voz<br>
+  Feira de Ci&ecirc;ncias COREE 2026
+</footer>
+
+<script>
+(function(){
+  'use strict';
+
+  // ===== State =====
+  let currentStep = 1;
+  let selectedDevice = null;   // 'sensor_a' | 'sensor_b'
+  let selectedVoice = null;    // 'homem' | 'mulher' | 'menino' | 'menina'
+  let selectedLanguage = null; // 'pt' | 'en' | 'es' | 'fr' | 'zh' | 'ar' (sprint F)
+  let installedDevices = {};   // Track which devices have been installed
+  let installedCount = 0;
+
+  // Whitelists pra validacao em getManifestPath (fix qa-destruidor sprint F)
+  const VALID_VOICES = ['homem', 'mulher', 'menino', 'menina'];
+  const VALID_LANGS = ['pt', 'en', 'es', 'fr', 'zh', 'ar'];
+
+  // Mapa idioma → codigo BCP-47 do Web Speech API (sprint F)
+  const LANG_BCP47 = {
+    pt: 'pt-BR', en: 'en-US', es: 'es-ES',
+    fr: 'fr-FR', zh: 'zh-CN', ar: 'ar-SA'
+  };
+
+  const deviceNames = {
+    sensor_a: 'Sensor Principal (Mão Esquerda)',
+    sensor_b: 'Sensor Secundário (Mão Direita)'
+  };
+
+  // ===== Browser Detection =====
+  function checkBrowser() {
+    const isChrome = /Chrome/.test(navigator.userAgent) && !/Edg|OPR/.test(navigator.userAgent);
+    const hasSerial = 'serial' in navigator;
+    const warning = document.getElementById('browserWarning');
+    if (!isChrome || !hasSerial) {
+      warning.classList.add('visible');
+    }
+  }
+  checkBrowser();
+
+  // ===== Navigation =====
+  window.goToStep = function(step) {
+    // Validation
+    if (step === 3 && selectedDevice !== 'sensor_a') {
+      step = 4; // Skip voice selection for non-primary sensors
+    }
+    if (step === 4) {
+      setupInstallButton();
+    }
+
+    // Hide all sections
+    document.querySelectorAll('.section').forEach(function(s) { s.classList.remove('active'); });
+
+    // Show target
+    const target = step === 5 ? 'stepSuccess' : 'step' + step;
+    const el = document.getElementById(target);
+    if (el) {
+      el.classList.remove('active');
+      // Force reflow for animation
+      void el.offsetWidth;
+      el.classList.add('active');
+    }
+
+    currentStep = step;
+    updateStepIndicator();
+  };
+
+  window.goBack = function() {
+    if (currentStep === 4) {
+      if (selectedDevice === 'sensor_a') {
+        goToStep(3);
+      } else {
+        goToStep(2);
+      }
+    }
+  };
+
+  function updateStepIndicator() {
+    var displayStep = currentStep > 4 ? 4 : currentStep;
+    document.querySelectorAll('.step-dot').forEach(function(dot) {
+      var s = parseInt(dot.dataset.step);
+      dot.classList.remove('active', 'done');
+      if (s === displayStep) dot.classList.add('active');
+      else if (s < displayStep) dot.classList.add('done');
+    });
+    document.querySelectorAll('.step-line').forEach(function(line) {
+      var l = parseInt(line.dataset.line);
+      line.classList.toggle('done', l < displayStep);
+    });
+  }
+
+  // ===== Device Selection =====
+  window.selectDevice = function(device) {
+    selectedDevice = device;
+    selectedVoice = null;
+    selectedLanguage = null;
+
+    // Highlight card
+    document.querySelectorAll('.device-card').forEach(function(c) { c.classList.remove('selected'); });
+    document.getElementById('card-' + device).classList.add('selected');
+
+    // Reset voice + language selection
+    document.querySelectorAll('.voice-card').forEach(function(c) { c.classList.remove('selected'); });
+    document.querySelectorAll('.lang-chip').forEach(function(c) {
+      c.classList.remove('selected');
+      c.setAttribute('aria-checked', 'false');
+    });
+    var langSec = document.getElementById('langSection');
+    if (langSec) langSec.classList.remove('enabled');
+    var btn = document.getElementById('btnNextVoice');
+    if (btn) btn.disabled = true;
+
+    // Go to next step after brief delay for visual feedback
+    setTimeout(function() {
+      if (device === 'sensor_a') {
+        goToStep(3);
+      } else {
+        goToStep(4);
+      }
+    }, 250);
+  };
+
+  // ===== Voice Selection =====
+  window.selectVoice = function(voice) {
+    selectedVoice = voice;
+    document.querySelectorAll('.voice-card').forEach(function(c) { c.classList.remove('selected'); });
+    document.getElementById('voice-' + voice).classList.add('selected');
+    // Habilita secao de idioma (sprint F)
+    var langSec = document.getElementById('langSection');
+    if (langSec) langSec.classList.add('enabled');
+    updateNextButton();
+  };
+
+  // ===== Language Selection (sprint F) =====
+  window.selectLanguage = function(lang) {
+    selectedLanguage = lang;
+    document.querySelectorAll('.lang-chip').forEach(function(c) {
+      c.classList.remove('selected');
+      c.setAttribute('aria-checked', 'false');
+    });
+    var chip = document.getElementById('lang-' + lang);
+    if (chip) {
+      chip.classList.add('selected');
+      chip.setAttribute('aria-checked', 'true');
+    }
+    updateNextButton();
+  };
+
+  function updateNextButton() {
+    var btn = document.getElementById('btnNextVoice');
+    if (!btn) return;
+    btn.disabled = !(selectedVoice && selectedLanguage);
+  }
+
+  window.playVoiceSample = function(voice, btn) {
+    // Stop any current speech
+    if (window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+    }
+    // Remove playing state from all
+    document.querySelectorAll('.voice-sample').forEach(function(b) { b.classList.remove('playing'); });
+
+    if (!window.speechSynthesis) return;
+
+    // Sample multilingue por idioma + tom de criança/adulto (sprint F)
+    var SAMPLE_TEXTS = {
+      pt: { adult: 'Olá! Eu sou o GESTUUM. Seus gestos, sua voz.', child: 'Oi! Eu sou o GESTUUM! Legal, né?' },
+      en: { adult: 'Hello! I am GESTUUM. Your gestures, your voice.', child: 'Hi! I am GESTUUM! Cool, right?' },
+      es: { adult: 'Hola! Soy GESTUUM. Tus gestos, tu voz.', child: 'Hola! Soy GESTUUM! Genial, verdad?' },
+      fr: { adult: 'Bonjour! Je suis GESTUUM. Vos gestes, votre voix.', child: 'Salut! Je suis GESTUUM!' },
+      zh: { adult: '你好，我是 GESTUUM。你的手势，你的声音。', child: '你好！我是 GESTUUM！' },
+      ar: { adult: 'مرحبا، أنا GESTUUM.', child: 'مرحبا، أنا GESTUUM!' }
+    };
+    var lang = selectedLanguage || 'pt';
+    var tone = (voice === 'menino' || voice === 'menina') ? 'child' : 'adult';
+    var text = SAMPLE_TEXTS[lang][tone];
+
+    var utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = LANG_BCP47[lang] || 'pt-BR';
+    utterance.rate = voice === 'menino' || voice === 'menina' ? 1.15 : 0.95;
+    utterance.pitch = voice === 'mulher' || voice === 'menina' ? 1.4 : (voice === 'menino' ? 1.3 : 0.9);
+
+    btn.classList.add('playing');
+    btn.innerHTML = '&#9632; Ouvindo...';
+
+    utterance.onend = function() {
+      btn.classList.remove('playing');
+      btn.innerHTML = '&#9654; Ouvir';
+    };
+    utterance.onerror = function() {
+      btn.classList.remove('playing');
+      btn.innerHTML = '&#9654; Ouvir';
+    };
+
+    window.speechSynthesis.speak(utterance);
+  };
+
+  // ===== ESP Web Tools Install Button =====
+  function getManifestPath() {
+    if (selectedDevice === 'sensor_a') {
+      // Validacao contra whitelist (fix qa-destruidor: state injetado via DevTools)
+      if (!VALID_VOICES.includes(selectedVoice)) return '';
+      if (!VALID_LANGS.includes(selectedLanguage)) return '';
+      return 'manifests/sensor_a_' + selectedVoice + '_' + selectedLanguage + '.json';
+    }
+    if (selectedDevice === 'sensor_b') {
+      return 'manifests/sensor_b.json';
+    }
+    return '';
+  }
+
+  function setupInstallButton() {
+    var container = document.getElementById('espInstallContainer');
+    var manifest = getManifestPath();
+    var name = deviceNames[selectedDevice] || 'Dispositivo';
+
+    document.getElementById('installDeviceName').textContent = name;
+
+    // Fix qa-destruidor: state incompleto/injetado nao gera manifest vazio
+    if (!manifest) {
+      container.innerHTML =
+        '<div style="background:#FFEBEE;border:1px solid #E57373;border-radius:8px;padding:16px;color:#C62828">' +
+        '<strong>Configuracao incompleta.</strong><br>' +
+        'Volte e selecione dispositivo, voz e idioma antes de continuar.' +
+        '</div>';
+      return;
+    }
+
+    // erase-first: apaga flash inteira antes de escrever (sprint F fix).
+    // Garante NVS limpa - bug Cadeia A da auditoria (NVS antiga com VOICE_X
+    // != HOMEM causa silencio porque SPIFFS sempre populado em /a/h/).
+    container.innerHTML =
+      '<esp-web-install-button manifest="' + manifest + '" erase-first>' +
+        '<button slot="activate" class="btn btn-primary btn-block" style="font-size:1.1rem;padding:18px 40px">' +
+          '\uD83D\uDD0C Configurar Dispositivo' +
+        '</button>' +
+        '<span slot="unsupported">' +
+          'Seu navegador não suporta conexão via cabo USB.<br>' +
+          'Por favor, use o <b>Google Chrome</b> em um computador ou Android.' +
+        '</span>' +
+      '</esp-web-install-button>';
+
+    // Listen for state changes (fix sprint F: tratar mais que so 'finished')
+    var espBtn = container.querySelector('esp-web-install-button');
+    var isFlashing = false;
+    if (espBtn) {
+      espBtn.addEventListener('state-changed', function(e) {
+        if (!e.detail) return;
+        var st = e.detail.state;
+        // Estados de escrita: bloqueia beforeunload pra evitar cabo puxado mid-flash
+        if (st === 'preparing' || st === 'erasing' || st === 'writing') {
+          isFlashing = true;
+        }
+        if (st === 'finished') {
+          isFlashing = false;
+          showSuccess();
+        }
+        if (st === 'error') {
+          isFlashing = false;
+          var msg = (e.detail.message || 'erro desconhecido') + '';
+          alert('Algo deu errado no flash:\n\n' + msg +
+                '\n\nDicas:\n- Cabo de dados? (nao so carga)\n- Aperte Reset no dispositivo\n- Tente outro USB');
+        }
+      });
+    }
+    // Bloqueio de unload durante flash (fix qa-destruidor: boot loop se aba fechar)
+    window.addEventListener('beforeunload', function(e) {
+      if (isFlashing) {
+        e.preventDefault();
+        e.returnValue = 'Flash em andamento - fechar agora corrompe o dispositivo!';
+        return e.returnValue;
+      }
+    });
+
+    var voiceLabel = selectedVoice ? ' (voz: ' + selectedVoice + ')' : '';
+    // Developer info - manifest path for debugging
+    document.getElementById('manifestNote').textContent = manifest + voiceLabel;
+  }
+
+  // ===== Success =====
+  function updateDeviceProgress() {
+    var el = document.getElementById('deviceProgress');
+    if (el) {
+      el.textContent = 'Dispositivos configurados: ' + installedCount + ' de 2';
+    }
+  }
+
+  window.showSuccess = function() {
+    // Track installed device
+    if (selectedDevice && !installedDevices[selectedDevice]) {
+      installedDevices[selectedDevice] = true;
+      installedCount++;
+      updateDeviceProgress();
+    }
+
+    var name = deviceNames[selectedDevice] || 'Dispositivo';
+    document.getElementById('successTitle').textContent = name + ' configurado com sucesso!';
+
+    var nextSteps = document.getElementById('nextSteps');
+    var btnNext = document.getElementById('btnNextDevice');
+    var btnApp = document.getElementById('btnOpenApp');
+
+    var allDone = installedDevices['sensor_a'] && installedDevices['sensor_b'];
+
+    if (allDone) {
+      // Both devices installed
+      nextSteps.innerHTML =
+        '<div class="step-item"><span class="step-num" style="background:var(--green-dark)">&#10003;</span><span>Os 2 dispositivos est&atilde;o prontos!</span></div>' +
+        '<div class="step-item"><span class="step-num">1</span><span>Desconecte o cabo USB</span></div>' +
+        '<div class="step-item"><span class="step-num">2</span><span>Ligue os 2 dispositivos</span></div>' +
+        '<div class="step-item"><span class="step-num">3</span><span>Abra o <b>Configurador GESTUUM</b> para personalizar</span></div>';
+      btnNext.style.display = 'none';
+      btnApp.style.display = '';
+    } else if (selectedDevice === 'sensor_a') {
+      nextSteps.innerHTML =
+        '<div class="step-item"><span class="step-num" style="background:var(--green-dark)">&#10003;</span><span>Agora <b>DESCONECTE</b> este sensor do cabo</span></div>' +
+        '<div class="step-item"><span class="step-num">1</span><span>Pegue o <b>PR&Oacute;XIMO</b> sensor (o que <b>N&Atilde;O</b> tem pe&ccedil;a no topo)</span></div>' +
+        '<div class="step-item"><span class="step-num">2</span><span>Conecte-o ao cabo USB</span></div>' +
+        '<div class="step-item"><span class="step-num">3</span><span>Clique em "Configurar pr&oacute;ximo dispositivo"</span></div>';
+      btnNext.textContent = 'Configurar Sensor Secundário';
+      btnNext.style.display = '';
+      btnApp.style.display = 'none';
+    } else if (selectedDevice === 'sensor_b') {
+      nextSteps.innerHTML =
+        '<div class="step-item"><span class="step-num" style="background:var(--green-dark)">&#10003;</span><span>Agora <b>DESCONECTE</b> este sensor do cabo</span></div>' +
+        '<div class="step-item"><span class="step-num">1</span><span>Pegue o <b>Sensor Principal</b> (o que tem pe&ccedil;a no topo)</span></div>' +
+        '<div class="step-item"><span class="step-num">2</span><span>Conecte-o ao cabo USB</span></div>' +
+        '<div class="step-item"><span class="step-num">3</span><span>Clique em "Configurar pr&oacute;ximo dispositivo"</span></div>';
+      btnNext.textContent = 'Configurar Sensor Principal';
+      btnNext.style.display = '';
+      btnApp.style.display = 'none';
+    }
+
+    // Show success section
+    document.querySelectorAll('.section').forEach(function(s) { s.classList.remove('active'); });
+    document.getElementById('stepSuccess').classList.add('active');
+    currentStep = 5;
+    updateStepIndicator();
+
+    // Confetti!
+    spawnConfetti();
+  };
+
+  function spawnConfetti() {
+    var container = document.getElementById('confettiContainer');
+    container.innerHTML = '';
+    var colors = ['#A8D5BA', '#A7C7E7', '#FFB74D', '#E57373', '#C4B5FD', '#FFD600', '#7FBF9B'];
+    for (var i = 0; i < 40; i++) {
+      var piece = document.createElement('div');
+      piece.className = 'confetti-piece';
+      piece.style.left = (Math.random() * 100) + '%';
+      piece.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+      piece.style.animationDelay = (Math.random() * 1.5) + 's';
+      piece.style.animationDuration = (2 + Math.random() * 2) + 's';
+      piece.style.width = (6 + Math.random() * 8) + 'px';
+      piece.style.height = (6 + Math.random() * 8) + 'px';
+      piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+      container.appendChild(piece);
+    }
+  }
+
+  // ===== FAQ =====
+  window.toggleFaq = function(btn) {
+    var answer = btn.nextElementSibling;
+    var isOpen = btn.classList.contains('open');
+
+    // Close all
+    document.querySelectorAll('.faq-q').forEach(function(q) { q.classList.remove('open'); });
+    document.querySelectorAll('.faq-a').forEach(function(a) { a.classList.remove('open'); });
+
+    if (!isOpen) {
+      btn.classList.add('open');
+      answer.classList.add('open');
+    }
+  };
+
+})();
+</script>
+</body>
+</html>

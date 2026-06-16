@@ -1,0 +1,32 @@
+# === GESTUUM (repo publico de codigo) ===
+
+# Builds do PlatformIO (gerados, nao commitar)
+.pio/
+
+# === Arquivos de sistema ===
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# === Ambientes virtuais ===
+.venv/
+venv/
+env/
+node_modules/
+__pycache__/
+*.pyc
+
+# === Secrets (nunca commitar) ===
+.env
+.env.local
+.env.production
+*.pem
+*.key
+credentials.json
+
+# === IDE ===
+.vscode/
+.idea/
+*.code-workspace

@@ -1,0 +1,14 @@
+# GESTUUM Custom Partition Table — M5StickC Plus2 (8MB Flash)
+# FIX INSTALL-05: app0 aumentado de 0x1E0000 (1.875MB) para 0x280000 (2.5MB)
+#                 para acomodar firmware com BLE + Audio + M5Unified.
+# FIX SPRINT F v3 (2026-05-16): SPIFFS aumentado de 0x570000 (5.44MB) para
+#                 0x600000 (6.0MB) pra acomodar voz AR (5.4MB) e PT (5.0MB).
+#                 app0 reduzido de 0x280000 para 0x1F0000 (1.94MB) - firmware
+#                 atual 1.88MB cabe com 60KB folga. SPIFFS offset 0x290000 ->
+#                 0x200000.
+# Total: 0x800000 (8MB)
+# Name,   Type, SubType, Offset,   Size,     Flags
+nvs,      data, nvs,     0x9000,   0x5000,
+otadata,  data, ota,     0xe000,   0x2000,
+app0,     app,  ota_0,   0x10000,  0x1F0000,
+spiffs,   data, spiffs,  0x200000, 0x600000,

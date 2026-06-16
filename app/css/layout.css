@@ -1,0 +1,282 @@
+/* GESTUUM — Layout shell (nav + footer)
+   CSS comum entre index, devices, contato. Carregado depois de variables.css.
+   Manter aqui APENAS o que e estrutura compartilhada — estilos especificos
+   de cada pagina ficam no <style> da propria pagina. */
+
+/* ===== Reset ===== */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  color: var(--text);
+  background: var(--bg);
+  line-height: 1.7;
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ===== Slot reservation (evita FOUC enquanto layout.js injeta) ===== */
+#site-nav {
+  min-height: 64px;
+}
+
+/* Paginas sem hero proprio (ex: contato.html) podem aplicar
+   essa classe no <body> para reservar espaco para o nav fixed. */
+body.page--inner {
+  padding-top: 64px;
+}
+
+/* ===== Nav ===== */
+.nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: rgba(255,255,255,0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid transparent;
+  transition: var(--transition-base);
+}
+
+.nav.scrolled {
+  background: rgba(255,255,255,0.95);
+  border-bottom: 1px solid var(--border-light);
+  box-shadow: var(--shadow-sm);
+}
+
+.nav-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px var(--space-3);
+}
+
+.nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 18px;
+  color: #7BC09A;
+  letter-spacing: 1px;
+}
+
+.nav-brand img {
+  height: 34px;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  list-style: none;
+}
+
+.nav-links a {
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  padding: 8px 14px;
+  border-radius: var(--radius-full);
+  transition: var(--transition-fast);
+}
+
+.nav-links a:hover {
+  color: var(--text);
+  background: var(--green-pale);
+}
+
+.nav-links a.active {
+  color: var(--text);
+  background: var(--green-pale);
+  font-weight: 600;
+}
+
+.nav-cta {
+  background: var(--green) !important;
+  color: var(--text) !important;
+  font-weight: 600 !important;
+  padding: 8px 20px !important;
+  border-radius: var(--radius-full) !important;
+  transition: var(--transition-base) !important;
+}
+
+.nav-cta:hover {
+  background: var(--green-dark) !important;
+  color: var(--white) !important;
+  transform: translateY(-1px);
+}
+
+.nav-cta-blue {
+  background: var(--blue) !important;
+  color: var(--text) !important;
+  font-weight: 600 !important;
+  padding: 8px 20px !important;
+  border-radius: var(--radius-full) !important;
+  transition: var(--transition-base) !important;
+}
+
+.nav-cta-blue:hover {
+  background: var(--blue-dark) !important;
+  color: var(--white) !important;
+  transform: translateY(-1px);
+}
+
+.nav-toggle {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: var(--space-1);
+}
+
+.nav-toggle span {
+  display: block;
+  width: 22px;
+  height: 2px;
+  background: var(--text);
+  margin: 5px 0;
+  transition: var(--transition-base);
+  border-radius: 2px;
+}
+
+/* ===== Footer ===== */
+.footer {
+  background: var(--text);
+  color: rgba(255,255,255, 0.65);
+  padding: var(--space-12) var(--space-3) var(--space-5);
+  border-radius: 2rem 2rem 0 0;
+  position: relative;
+  z-index: 1;
+}
+
+.footer-grid {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: var(--space-6);
+  margin-bottom: var(--space-6);
+}
+
+.footer-brand img {
+  height: 40px;
+  margin-bottom: var(--space-2);
+  filter: brightness(10);
+}
+
+.footer-brand p {
+  font-size: 14px;
+  line-height: 1.7;
+  max-width: 360px;
+}
+
+.footer-tagline {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--green);
+  font-style: italic;
+  margin-top: var(--space-2);
+}
+
+.footer h4 {
+  color: var(--white);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: var(--space-2);
+}
+
+.footer-links {
+  list-style: none;
+}
+
+.footer-links li {
+  margin-bottom: 12px;
+}
+
+.footer-links a {
+  color: rgba(255,255,255, 0.5);
+  text-decoration: none;
+  font-size: 14px;
+  transition: color var(--transition-fast);
+}
+
+.footer-links a:hover {
+  color: var(--green);
+}
+
+.footer-bottom {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-top: var(--space-4);
+  border-top: 1px solid rgba(255,255,255, 0.08);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.footer-bottom p {
+  font-size: 13px;
+  color: rgba(255,255,255, 0.35);
+}
+
+.footer-project {
+  font-size: 13px;
+  color: rgba(255,255,255, 0.35);
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+  .nav-links {
+    display: none;
+    position: absolute;
+    top: 64px;
+    left: 0;
+    right: 0;
+    background: rgba(255,255,255,0.97);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    flex-direction: column;
+    padding: var(--space-3);
+    gap: var(--space-2);
+    box-shadow: var(--shadow-lg);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .nav-links.open {
+    display: flex;
+  }
+
+  .nav-toggle {
+    display: block;
+  }
+
+  .footer-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-5);
+  }
+
+  .footer-bottom {
+    flex-direction: column;
+    text-align: center;
+  }
+}

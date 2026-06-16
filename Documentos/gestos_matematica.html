@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>GESTUUM — Matematica dos Gestos</title>
+<style>
+@page { size: A4; margin: 2cm; }
+@media print { pre { page-break-inside: avoid; } }
+body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 11pt; line-height: 1.6; color: #2D3748; max-width: 800px; margin: 0 auto; padding: 20px; }
+h1 { font-size: 22pt; color: #7BC09A; border-bottom: 3px solid #7BC09A; padding-bottom: 8px; }
+h2 { font-size: 16pt; color: #2D3748; margin-top: 24pt; border-bottom: 1px solid #E2E8F0; padding-bottom: 4px; }
+h3 { font-size: 13pt; color: #4A5568; margin-top: 16pt; }
+table { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 10pt; }
+th { background-color: #7BC09A; color: white; padding: 8px 12px; text-align: left; }
+td { border: 1px solid #E2E8F0; padding: 6px 12px; }
+tr:nth-child(even) { background-color: #F7FAFC; }
+code { background-color: #EDF2F7; padding: 2px 6px; border-radius: 3px; font-family: Consolas, monospace; font-size: 10pt; }
+pre { background-color: #1A202C; color: #E2E8F0; padding: 16px; border-radius: 8px; font-size: 9pt; line-height: 1.4; overflow-x: auto; }
+pre code { background: none; padding: 0; color: inherit; }
+blockquote { border-left: 4px solid #7BC09A; padding-left: 16px; color: #718096; font-style: italic; }
+img { max-width: 100%; border: 1px solid #E2E8F0; border-radius: 4px; }
+hr { border: none; border-top: 2px solid #E2E8F0; margin: 24px 0; }
+</style></head><body><h1>GESTUUM — A Matematica por tras dos Gestos</h1>
+<blockquote>
+<p>Documento tecnico para explicar como o reconhecimento de gestos funciona
+do ponto de vista matematico. Inclui o que temos hoje (v1) e o que muda
+na versao 2 (v2) para maior precisao.</p>
+</blockquote>
+<hr />
+<h2>1. O Problema: Transformar Movimento em Palavras</h2>
+<p>O GESTUUM converte <strong>gestos de mao</strong> em <strong>voz sintetizada</strong>. Para isso, precisa
+resolver um problema matematico: dado um movimento no espaco 3D, identificar
+qual gesto foi feito entre N gestos possiveis.</p>
+<p>O sensor (MPU6886) mede duas coisas 50 vezes por segundo:</p>
+<pre><code>Acelerometro: a(t) = [ax, ay, az]    (forca em cada eixo, incluindo gravidade)
+Giroscopio:   g(t) = [gx, gy, gz]    (rotacao em cada eixo)
+</code></pre>
+<p>Cada gesto gera uma <strong>serie temporal</strong> de ~75-150 amostras (1.5-3 segundos).
+O desafio e comparar essa serie com templates treinados e encontrar o mais parecido.</p>
+<hr />
+<h2>2. Pipeline Atual (v1): Grid 3D + Assinaturas Orbitais</h2>
+<h3>2.1 Discretizacao em Grid 3D (Matrix3D)</h3>
+<p>O primeiro passo e mapear a aceleracao continua para uma <strong>grade discreta 11x11x11</strong>.</p>
+<p><strong>Formula de mapeamento:</strong></p>
+<pre><code>celula(eixo) = round((a_eixo / ACCEL_RANGE + 0.5) * (GRID_SIZE - 1))
+             = round((a_eixo / 2.0 + 0.5) * 10)
+
+Onde:
+  a_eixo = aceleracao no eixo (g), range [-2g, +2g]
+  ACCEL_RANGE = 2.0g
+  GRID_SIZE = 11
+  Resultado: celula inteira [0, 10], centro = 5
+</code></pre>
+<p><strong>Exemplo numerico:</strong></p>
+<pre><code>Mao parada:    a = [0.0, 0.0, 1.0]g   → celula [5, 5, 8]
+                                         (gravidade puxa Z para cima na grid)
+
+Mao para frente: a = [0.5, 0.0, 1.0]g → celula [8, 5, 8]
+                                         (X sobe de 5 para 8)
+
+Mao para cima:   a = [0.0, 0.5, 1.0]g → celula [5, 8, 8]
+                                         (Y sobe de 5 para 8)
+</code></pre>
+<p>A sequencia de celulas visitadas forma a <strong>trajetoria</strong> do gesto:</p>
+<pre><code>Gesto &quot;I want&quot; (CX01):
+  [5,5,5] → [6,5,5] → [7,5,5] → [7,5,6] → [7,5,5]
+
+  Inicio (repouso) → move no eixo X → sobe Z → volta
+</code></pre>
+<p><strong>Representacao grafica:</strong> Ver imagem <code>docs/gestures/CX01_I want.png</code></p>
+<p><img alt="Trajetoria CX01 I want" src="gestures/CX01_I%20want.png" /></p>
+<p>A imagem mostra 4 vistas da trajetoria no cubo 11x11x11:
+- <strong>3D</strong>: cubo com a trajetoria desenhada (verde=inicio, vermelho=fim)
+- <strong>Vista Superior (X-Y)</strong>: movimento lateral vs frente/tras
+- <strong>Vista Lateral (X-Z)</strong>: movimento lateral vs cima/baixo
+- <strong>Vista Frontal (Y-Z)</strong>: frente/tras vs cima/baixo</p>
+<h3>2.2 Assinaturas Orbitais (OrbitalExtractor)</h3>
+<p>A trajetoria na grid captura <strong>onde</strong> o gesto foi, mas perde informacao sobre
+<strong>como</strong> foi feito (rapido/lento, suave/brusco, linear/circular). Para capturar
+a <strong>forma</strong> do movimento, extraimos 8 features matematicas das amostras brutas:</p>
+<p><strong>Feature 1 — Amplitude (media da magnitude):</strong></p>
+<pre><code>amplitude = (1/N) * sum(||a(i) - g||)
+
+Onde:
+  a(i) = aceleracao na amostra i
+  g = gravidade estimada (media das amostras em repouso)
+  ||x|| = sqrt(x² + y² + z²)   (norma euclidiana)
+  N = numero de amostras do stroke
+</code></pre>
+<p>Gestos amplos (bracos abertos) tem amplitude alta (~2.0g).
+Gestos sutis (pulso) tem amplitude baixa (~0.3g).</p>
+<p><strong>Feature 2 — Pico (magnitude maxima):</strong></p>
+<pre><code>peak = max(||a(i) - g||)   para todo i no stroke
+</code></pre>
+<p><strong>Feature 3 — Linearidade (PCA):</strong></p>
+<p>Analise de Componentes Principais (PCA) 3x3 sobre as amostras do stroke.
+Calcula os 3 autovalores (lambda1 &gt;= lambda2 &gt;= lambda3) da matriz de covariancia:</p>
+<pre><code>Covariancia C = (1/N) * sum((a(i) - media) * (a(i) - media)^T)
+
+Linearidade = (lambda1 - lambda2) / (lambda1 + epsilon)
+</code></pre>
+<ul>
+<li>Linearidade ~1.0: movimento em linha reta (lambda1 &gt;&gt; lambda2)</li>
+<li>Linearidade ~0.0: movimento circular ou espalhado (lambda1 ≈ lambda2)</li>
+</ul>
+<p><strong>Feature 4 — Plano Normal:</strong></p>
+<p>O autovetor do <strong>menor</strong> autovalor (lambda3) indica a direcao de menor variancia
+— ou seja, o <strong>plano</strong> em que o movimento ocorreu.</p>
+<pre><code>planoNormal = autovetor(lambda3)
+</code></pre>
+<p>Se o gesto e feito no plano horizontal, planoNormal ≈ [0, 0, 1] (vertical).
+Se no plano vertical frontal, planoNormal ≈ [0, 1, 0] (para frente).</p>
+<p><strong>Feature 5 — Duracao:</strong></p>
+<pre><code>duracao = N_stroke * dt = N_stroke * 20ms   (50Hz)
+</code></pre>
+<p><strong>Feature 6 — Suavidade (inverso do jerk):</strong></p>
+<p>O jerk e a derivada da aceleracao — quao brusco e o movimento:</p>
+<pre><code>jerk_medio = (1/(N-1)) * sum(||a(i) - a(i-1)||)
+
+suavidade = 1 / (1 + jerk_medio * 10)
+</code></pre>
+<ul>
+<li>Suavidade ~1.0: movimento muito suave (danca, tai chi)</li>
+<li>Suavidade ~0.3: movimento brusco (soco, tap)</li>
+</ul>
+<p><strong>Feature 7 — Rotacao (energia do giroscopio):</strong></p>
+<pre><code>rotacao = energia_gyro / (energia_gyro + energia_accel + epsilon)
+
+energia_gyro = sum(gx² + gy² + gz²)
+energia_accel = sum((ax-gx)² + (ay-gy)² + (az-gz)²)
+</code></pre>
+<ul>
+<li>Rotacao ~0.0: movimento translacional (sem girar o pulso)</li>
+<li>Rotacao ~1.0: movimento rotacional (girar a mao)</li>
+</ul>
+<p><strong>Feature 8 — Simetria (correlacao de Pearson):</strong></p>
+<p>Compara a 1a metade do gesto com a 2a metade invertida:</p>
+<pre><code>simetria = correlacao(magnitudes_1a_metade, magnitudes_2a_metade_invertida)
+</code></pre>
+<ul>
+<li>Simetria ~1.0: movimento simetrico (ida e volta iguais)</li>
+<li>Simetria ~-1.0: movimento assimetrico (ida diferente da volta)</li>
+<li>Simetria ~0.0: sem correlacao</li>
+</ul>
+<h3>2.3 Comparacao: Distancia Ponderada</h3>
+<p>Para comparar duas assinaturas (capturada vs template), usamos distancia
+euclidiana ponderada e normalizada:</p>
+<pre><code>distancia = sqrt(
+    W_amp  * ((amp_a - amp_b) / R_amp)²  +
+    W_peak * ((peak_a - peak_b) / R_peak)² +
+    W_lin  * ((lin_a - lin_b) / R_lin)²  +
+    W_plane * (1 - |dot(plano_a, plano_b)|)² +
+    W_dur  * ((dur_a - dur_b) / R_dur)²  +
+    W_sm   * ((sm_a - sm_b) / R_sm)²    +
+    W_rot  * ((rot_a - rot_b) / R_rot)² +
+    W_sym  * ((sym_a - sym_b) / R_sym)²
+)
+</code></pre>
+<p><strong>Pesos calibrados:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>Peso (W)</th>
+<th>Range (R)</th>
+<th>Justificativa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Amplitude</td>
+<td>1.5</td>
+<td>2.0g</td>
+<td>Tamanho do gesto</td>
+</tr>
+<tr>
+<td>Pico</td>
+<td>1.0</td>
+<td>4.0g</td>
+<td>Intensidade maxima</td>
+</tr>
+<tr>
+<td><strong>Linearidade</strong></td>
+<td><strong>2.0</strong></td>
+<td>1.0</td>
+<td><strong>Mais discriminativo</strong> — forma do movimento</td>
+</tr>
+<tr>
+<td>Plano</td>
+<td>0.7</td>
+<td>angular</td>
+<td>Orientacao (reduzido por variacao do pulso)</td>
+</tr>
+<tr>
+<td>Duracao</td>
+<td>0.5</td>
+<td>3000ms</td>
+<td>Velocidade (menos peso por variacao natural)</td>
+</tr>
+<tr>
+<td>Suavidade</td>
+<td>1.0</td>
+<td>1.0</td>
+<td>Brusquidade</td>
+</tr>
+<tr>
+<td><strong>Rotacao</strong></td>
+<td><strong>1.5</strong></td>
+<td>1.0</td>
+<td><strong>Muito discriminativo</strong> — gyro vs accel</td>
+</tr>
+<tr>
+<td>Simetria</td>
+<td>1.0</td>
+<td>2.0</td>
+<td>Ida-volta vs unidirecional</td>
+</tr>
+</tbody>
+</table>
+<p>A distancia e convertida em score (0-100%):</p>
+<pre><code>score = distanceToScore(d) = 1.0 / (1.0 + d * d)
+
+d = 0   → score = 100% (identico)
+d = 0.5 → score = 80%
+d = 1.0 → score = 50%
+d = 2.0 → score = 20%
+</code></pre>
+<h3>2.4 Decisao: Threshold + Ratio Test</h3>
+<pre><code>Score combinado = 70% * score_acelerometro + 30% * score_giroscopio
+
+Aceitar se:
+  1. score_combinado &gt;= 55% (threshold por gesto)
+  2. ratio(second_best / best) &lt;= 0.95 (ratio test de Lowe, 2004)
+     → se dois gestos tem scores muito proximos, rejeitar como ambiguo
+</code></pre>
+<p><strong>Representacao grafica:</strong> Ver <code>docs/gestures/G01_water.png</code></p>
+<p><img alt="Trajetoria G01 water" src="gestures/G01_water.png" /></p>
+<hr />
+<h2>3. Limitacao do Pipeline v1: Direcao</h2>
+<h3>O Problema Fundamental</h3>
+<p>O acelerometro mede <strong>aceleracao</strong>, nao <strong>posicao</strong>. Quando a mao se move
+para frente e depois para tras (movimentos opostos), o perfil de aceleracao
+e <strong>simetrico</strong>:</p>
+<pre><code>Para frente:  a(t) = [0, 0, +2, +3, +2, 0, -2, -3, -2, 0]
+                      repouso  acelera        freia     repouso
+
+Para tras:    a(t) = [0, 0, -2, -3, -2, 0, +2, +3, +2, 0]
+                      repouso  acelera        freia     repouso
+</code></pre>
+<p>Na grid 3D, ambos visitam as <strong>mesmas celulas</strong> (so em ordem diferente).
+As assinaturas orbitais (amplitude, pico, linearidade) sao <strong>identicas</strong>
+porque medem magnitude, nao direcao.</p>
+<p><strong>Resultado:</strong> Gestos opostos no mesmo eixo sao <strong>indistinguiveis</strong> no v1.</p>
+<h3>Evidencia nos Dados Reais</h3>
+<p>Nos testes, os gestos CX01 "I want" e CX02 "I don't want" geravam
+trajetorias quase identicas na grid:</p>
+<pre><code>CX01: [5,5,5] → [6,5,5] → [7,5,5] → [7,5,6]
+CX02: [5,5,5] → [6,5,5] → [7,5,5] → [7,5,6]
+</code></pre>
+<p>A distincao so era possivel pelo giroscopio (rotacao diferente do pulso).</p>
+<hr />
+<h2>4. Pipeline v2: Peak Direction + DTW + Orbital</h2>
+<h3>4.1 Peak Direction (3 bits)</h3>
+<p>Para cada eixo (X, Y, Z), detectar o <strong>sinal do primeiro pico</strong> de aceleracao:</p>
+<pre><code>Para cada eixo e:
+  Percorrer amostras do stroke
+  Encontrar primeiro valor |a_e(i)| &gt; threshold
+  Se a_e(i) &gt; 0: direcao_e = +1 (positivo)
+  Se a_e(i) &lt; 0: direcao_e = -1 (negativo)
+  Senao:         direcao_e = 0  (sem movimento significativo)
+
+Resultado: vetor de 3 valores {+1, -1, 0} = 27 combinacoes possiveis
+</code></pre>
+<p><strong>Exemplo:</strong></p>
+<pre><code>&quot;Para frente&quot;: primeiro pico em X positivo → direcao = {+1, 0, 0}
+&quot;Para tras&quot;:   primeiro pico em X negativo → direcao = {-1, 0, 0}
+→ Trivialmente distinguiveis pelo sinal!
+</code></pre>
+<p><strong>Custo computacional:</strong> O(N) por eixo. Microsegundos. Zero memoria.</p>
+<h3>4.2 DTW — Dynamic Time Warping</h3>
+<p>DTW compara a <strong>forma completa</strong> da curva de aceleracao, nao features resumidas.
+Permite que o gesto seja feito em velocidades diferentes (warping temporal).</p>
+<p><strong>Formula (programacao dinamica):</strong></p>
+<pre><code>D(0,0) = d(Q[0], C[0])
+D(i,0) = infinito  para i &gt; 0
+D(0,j) = infinito  para j &gt; 0
+
+D(i,j) = d(Q[i], C[j]) + min(D(i-1,j), D(i,j-1), D(i-1,j-1))
+
+Distancia DTW = D(N-1, M-1)
+
+Onde:
+  Q = gesto capturado (N amostras)
+  C = template treinado (M amostras)
+  d(a,b) = |ax-bx| + |ay-by| + |az-bz|  (distancia Manhattan 3D)
+</code></pre>
+<p><strong>Propriedades importantes:</strong>
+- <strong>Deterministico:</strong> mesma entrada = mesma saida (nao e probabilistico!)
+- <strong>Tolerante a velocidade:</strong> gesto rapido vs lento = mesmo resultado
+- <strong>Preserva direcao:</strong> curvas opostas tem distancia DTW alta
+- <strong>Complexidade:</strong> O(N * M) — com banda Sakoe-Chiba: O(N * w)</p>
+<p><strong>Exemplo numerico (1 eixo):</strong></p>
+<pre><code>Template &quot;frente&quot;: [0, +1.5, +3.0, +1.5, 0, -1.5, -3.0, -1.5, 0]
+Template &quot;tras&quot;:   [0, -1.5, -3.0, -1.5, 0, +1.5, +3.0, +1.5, 0]
+
+Gesto capturado (frente, mais rapido):
+                   [+0.2, +2.0, +3.2, +0.8, -0.5, -2.0, -3.5, -0.8]
+
+DTW vs &quot;frente&quot;: distancia = 2.1  (baixa — MATCH)
+DTW vs &quot;tras&quot;:   distancia = 18.5 (alta — nao match)
+</code></pre>
+<p><strong>Viabilidade no ESP32 (240MHz):</strong></p>
+<pre><code>N = 75 amostras (1.5s a 50Hz)
+w = 8 (banda 10%)
+50 templates
+Operacoes: 75 * 16 * 50 = 60.000
+Tempo: 60.000 / 240.000.000 = 0.25ms
+Memoria: 2 linhas * 75 * 4 bytes = 600 bytes
+</code></pre>
+<h3>4.3 Arquitetura Combinada (Bitmap + Vetor)</h3>
+<p>A analogia com design grafico:</p>
+<pre><code>DTW (dados brutos)      = BITMAP  — pixel a pixel, toda informacao
+Orbital (8 features)    = VETOR   — curvas matematicas, forma abstrata
+Peak Direction (3 bits) = FILTRO  — elimina candidatos impossiveis
+</code></pre>
+<p>Manter os dois e mais seguro:</p>
+<pre><code>Captura IMU 50Hz
+    |
+Subtrair gravidade (filtro complementar)
+    |
+Peak Direction → elimina ~70% dos templates (direcao oposta)
+    |
+DTW (forma completa) → &quot;e o mesmo CAMINHO?&quot; (60% do score)
+    |
+Orbital (8 features) → &quot;e a mesma FORMA?&quot; (40% do score)
+    |
+Threshold por gesto + Ratio test → aceitar/rejeitar
+</code></pre>
+<hr />
+<h2>5. Comparacao v1 vs v2</h2>
+<table>
+<thead>
+<tr>
+<th>Aspecto</th>
+<th>v1 (atual)</th>
+<th>v2 (planejado)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Dados de entrada</strong></td>
+<td>Grid discretizada (perde direcao)</td>
+<td>Dados brutos (preserva direcao)</td>
+</tr>
+<tr>
+<td><strong>Matching principal</strong></td>
+<td>Orbital (8 features resumidas)</td>
+<td>DTW (curva completa)</td>
+</tr>
+<tr>
+<td><strong>Matching secundario</strong></td>
+<td>sequenceSimilarity</td>
+<td>Orbital (validacao)</td>
+</tr>
+<tr>
+<td><strong>Pre-filtro</strong></td>
+<td>Rejection por amplitude</td>
+<td>Peak Direction (3 bits)</td>
+</tr>
+<tr>
+<td><strong>Gestos opostos</strong></td>
+<td>Indistinguiveis</td>
+<td>Trivialmente separados</td>
+</tr>
+<tr>
+<td><strong>Tolerancia a velocidade</strong></td>
+<td>Parcial (duracao como feature)</td>
+<td>Total (warping DTW)</td>
+</tr>
+<tr>
+<td><strong>Complexidade</strong></td>
+<td>O(1) por template</td>
+<td>O(N*w) por template</td>
+</tr>
+<tr>
+<td><strong>Tempo no ESP32</strong></td>
+<td>~0.1ms</td>
+<td>~0.25ms (50 templates)</td>
+</tr>
+<tr>
+<td><strong>Memoria</strong></td>
+<td>~1.6KB</td>
+<td>~45KB</td>
+</tr>
+<tr>
+<td><strong>Precisao estimada (30 gestos)</strong></td>
+<td>~70%</td>
+<td>~95%+</td>
+</tr>
+</tbody>
+</table>
+<h3>O que muda na pratica</h3>
+<p><strong>v1 — Vocabulario limitado:</strong>
+- Cada gesto precisa usar eixo/rotacao diferente
+- Gestos naturais como "sim/nao" (cima/baixo) sao indistinguiveis
+- Com 30+ gestos, faltam combinacoes unicas</p>
+<p><strong>v2 — Vocabulario natural:</strong>
+- Gestos opostos funcionam (frente/tras, cima/baixo)
+- O DTW compara a sequencia temporal completa
+- 50+ gestos com precisao &gt;95%</p>
+<hr />
+<h2>6. Referencias Academicas</h2>
+<table>
+<thead>
+<tr>
+<th>Referencia</th>
+<th>Contribuicao</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Sakoe &amp; Chiba (1978)</strong></td>
+<td>DTW original — "Dynamic programming algorithm optimization for spoken word recognition", IEEE TASSP</td>
+</tr>
+<tr>
+<td><strong>Liu et al. (2009)</strong></td>
+<td>uWave — DTW para gestos com acelerometro, 98.6% acuracia com 8 gestos, IEEE PerCom</td>
+</tr>
+<tr>
+<td><strong>Lowe (2004)</strong></td>
+<td>Ratio test — "Distinctive Image Features from Scale-Invariant Keypoints", IJCV</td>
+</tr>
+<tr>
+<td><strong>Keogh &amp; Ratanamahatana (2005)</strong></td>
+<td>Otimizacoes DTW (LB_Keogh bound), Knowledge and Information Systems</td>
+</tr>
+<tr>
+<td><strong>Madgwick (2010)</strong></td>
+<td>Filtro de fusao IMU — estimativa de orientacao para subtracao de gravidade</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>7. Resumo para Apresentacao</h2>
+<p>O GESTUUM usa <strong>matematica aplicada</strong> para converter gestos em fala:</p>
+<ol>
+<li><strong>Amostragem</strong> — sensor captura 50 vetores 3D por segundo (150 numeros/s)</li>
+<li><strong>Discretizacao</strong> — mapeia aceleracao continua para grid 11x11x11 (funcao piso)</li>
+<li><strong>Extracao de features</strong> — PCA 3x3, correlacao de Pearson, norma euclidiana</li>
+<li><strong>Comparacao</strong> — distancia ponderada normalizada entre vetores de 8 dimensoes</li>
+<li><strong>Decisao</strong> — threshold + ratio test (estatistica descritiva)</li>
+<li><strong>Evolucao (v2)</strong> — programacao dinamica (DTW) para comparacao de series temporais</li>
+</ol>
+<p>A matematica envolvida abrange: <strong>algebra linear</strong> (PCA, autovalores), <strong>calculo</strong>
+(integracao, derivada/jerk), <strong>estatistica</strong> (correlacao, media, desvio padrao),
+<strong>programacao dinamica</strong> (DTW), e <strong>geometria analitica</strong> (distancia euclidiana,
+projecoes 3D, planos normais).</p>
+<p>O projeto demonstra que a matematica nao e abstrata — ela <strong>da voz a quem nao tem</strong>.</p>
+<script>window.onload = function() { window.print(); }</script>
+</body></html>

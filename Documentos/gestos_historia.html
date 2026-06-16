@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GESTUUM — Dar Voz a Quem Nao Tem</title>
+<style>
+  @page {
+    size: A4;
+    margin: 20mm 18mm 20mm 18mm;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    font-size: 11pt;
+    line-height: 1.55;
+    color: #1a1a1a;
+    background: #fff;
+    max-width: 210mm;
+    margin: 0 auto;
+    padding: 18mm;
+  }
+
+  /* ---- Titulos ---- */
+  h1 {
+    font-size: 22pt;
+    color: #1b6b4a;
+    text-align: center;
+    margin-bottom: 4px;
+    letter-spacing: 1px;
+  }
+
+  .subtitle {
+    text-align: center;
+    font-style: italic;
+    color: #555;
+    font-size: 10pt;
+    margin-bottom: 22px;
+    line-height: 1.5;
+  }
+
+  h2 {
+    font-size: 14pt;
+    color: #1b6b4a;
+    border-bottom: 2px solid #7BC09A;
+    padding-bottom: 3px;
+    margin-top: 26px;
+    margin-bottom: 10px;
+    page-break-after: avoid;
+  }
+
+  h3 {
+    font-size: 11.5pt;
+    color: #2a2a2a;
+    margin-top: 16px;
+    margin-bottom: 6px;
+    page-break-after: avoid;
+  }
+
+  /* ---- Separadores ---- */
+  hr {
+    border: none;
+    border-top: 1px solid #ccc;
+    margin: 20px 0;
+  }
+
+  /* ---- Paragrafos ---- */
+  p { margin-bottom: 8px; }
+
+  strong { color: #1a1a1a; }
+
+  em { color: #444; }
+
+  /* ---- Destaque (blockquote) ---- */
+  .callout {
+    background: #f0faf4;
+    border-left: 4px solid #7BC09A;
+    padding: 10px 14px;
+    margin: 12px 0;
+    font-size: 10.5pt;
+    color: #333;
+  }
+
+  .callout-strong {
+    background: #fff8e1;
+    border-left: 4px solid #f5a623;
+    padding: 10px 14px;
+    margin: 12px 0;
+    font-size: 10.5pt;
+    font-weight: 600;
+  }
+
+  /* ---- Tabelas ---- */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0 14px 0;
+    font-size: 9.5pt;
+    page-break-inside: avoid;
+  }
+
+  th {
+    background: #1b6b4a;
+    color: #fff;
+    padding: 6px 8px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 9pt;
+  }
+
+  td {
+    padding: 5px 8px;
+    border-bottom: 1px solid #ddd;
+    vertical-align: top;
+  }
+
+  tr:nth-child(even) td { background: #f9f9f9; }
+
+  /* ---- Codigo / diagrama ---- */
+  .code-block {
+    background: #f4f4f4;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 10px 14px;
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 9.5pt;
+    line-height: 1.5;
+    margin: 10px 0 14px 0;
+    white-space: pre;
+    page-break-inside: avoid;
+  }
+
+  /* ---- Listas ---- */
+  ul, ol {
+    margin: 6px 0 10px 22px;
+  }
+
+  li { margin-bottom: 4px; }
+
+  /* ---- Comparacao visual ---- */
+  .comparison-box {
+    background: #f7fdf9;
+    border: 1px solid #7BC09A;
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin: 12px 0;
+    page-break-inside: avoid;
+  }
+
+  /* ---- Frase destaque ---- */
+  .highlight {
+    font-size: 11pt;
+    font-weight: 700;
+    color: #1b6b4a;
+    text-align: center;
+    margin: 14px 0;
+  }
+
+  /* ---- Rodape ---- */
+  .footer {
+    margin-top: 30px;
+    padding-top: 12px;
+    border-top: 2px solid #7BC09A;
+    text-align: center;
+    font-size: 9.5pt;
+    color: #666;
+    line-height: 1.6;
+  }
+
+  .footer strong { color: #1b6b4a; }
+
+  .sources {
+    font-size: 8.5pt;
+    color: #888;
+    margin-top: 16px;
+    line-height: 1.5;
+  }
+
+  .sources strong { color: #666; }
+
+  /* ---- Print ---- */
+  @media print {
+    body { padding: 0; max-width: none; }
+    h2 { page-break-after: avoid; }
+    table, .code-block, .comparison-box { page-break-inside: avoid; }
+    .no-break { page-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ==================== CAPA ==================== -->
+<h1>GESTUUM</h1>
+<p class="subtitle">
+  Dar Voz a Quem Nao Tem<br>
+  <em>"Gestus"</em> — do latim, o ato de carregar, conduzir, expressar.<br>
+  Na Roma antiga, o gesto era linguagem antes da palavra.<br>
+  O GESTUUM retoma essa essencia: o gesto como voz.
+</p>
+
+<hr>
+
+<!-- ==================== ORIGEM ==================== -->
+<h2>A Origem: Por Que "GESTUUM"?</h2>
+
+<p>A palavra <strong>gesto</strong> vem do latim <em>gestus</em>, derivado de <em>gerere</em> — carregar, conduzir, realizar. Na Roma antiga, <em>gestus</em> nao significava apenas mover as maos. Significava <strong>como uma pessoa carrega seu corpo</strong> — sua postura, sua expressao, sua presenca.</p>
+
+<p>Na retorica romana, Cicero e Quintiliano ensinavam que um bom orador era julgado tanto pelas palavras quanto pelos gestos. A expressao <em>gestum agere</em> — "performar gestos" — era parte essencial da <em>actio</em>, a arte de comunicar com o corpo inteiro.</p>
+
+<p>Antes da escrita, antes da fala estruturada, os seres humanos se comunicavam por gestos. Platao registrou que Socrates acreditava que pessoas surdas tinham inteligencia inata e usariam as maos como linguagem. Essa e a forma mais antiga de comunicacao humana.</p>
+
+<p><strong>GESTUUM</strong> e a forma genitiva plural latina: <em>"dos gestos"</em>. O nome conecta essa heranca milenar a tecnologia moderna — um dispositivo que transforma o gesto em voz, devolvendo a capacidade de se expressar a quem a perdeu.</p>
+
+<hr>
+
+<!-- ==================== PROBLEMA ==================== -->
+<h2>O Problema: 250 Milhoes de Pessoas Sem Voz</h2>
+
+<p>No mundo, cerca de <strong>250 milhoes de pessoas</strong> tem dificuldade significativa de comunicacao oral (Google Project Relate). Sao pessoas que pensam, sentem, tem opinioes e necessidades — mas nao conseguem expressa-las pela fala.</p>
+
+<h3>Quem sao essas pessoas?</h3>
+
+<table>
+  <tr><th>Condicao</th><th>Pessoas no mundo</th><th>Realidade</th></tr>
+  <tr><td><strong>Autismo nao-verbal</strong></td><td>12-40 milhoes</td><td>Criancas que entendem tudo mas nao conseguem falar. Pais que nao sabem se o filho tem fome, sede, dor</td></tr>
+  <tr><td><strong>AVC com afasia</strong></td><td>~4,5 milhoes novos/ano</td><td>Adultos que falavam normalmente e perderam a fala de um dia para o outro. Sabem o que querem dizer mas as palavras nao saem</td></tr>
+  <tr><td><strong>Paralisia cerebral</strong></td><td>~7 milhoes com dificuldade de fala</td><td>Pessoas com inteligencia preservada mas musculatura que nao obedece. O mundo assume que nao entendem</td></tr>
+  <tr><td><strong>Sindrome de Down</strong></td><td>~6 milhoes</td><td>95% tem comprometimento da articulacao. A fala e atrasada e frequentemente ininteligivel</td></tr>
+  <tr><td><strong>ELA (esclerose lateral)</strong></td><td>~300.000</td><td>Perda progressiva de toda funcao motora. Stephen Hawking usou tecnologia assistiva por decadas</td></tr>
+</table>
+
+<p>No Brasil, o Censo IBGE 2022 identificou <strong>14,4 milhoes de pessoas com deficiencia</strong>, das quais <strong>2,7 milhoes</strong> tem dificuldade funcional em comunicacao.</p>
+
+<div class="callout-strong">
+  Estas nao sao estatisticas. Sao pessoas.<br>
+  A mae que nao sabe se o filho autista esta com dor.<br>
+  O avo que teve AVC e nao consegue pedir agua.<br>
+  A crianca com paralisia cerebral que quer dizer "eu te amo" mas o corpo nao deixa.
+</div>
+
+<hr>
+
+<!-- ==================== SOLUCAO ==================== -->
+<h2>A Solucao: Dois Gestos = Uma Frase</h2>
+
+<p>O GESTUUM funciona com uma logica simples que qualquer pessoa entende:</p>
+
+<div class="code-block">Mao esquerda (CONTEXTO)  +  Mao direita (OBJETO)  =  FRASE FALADA
+
+"Eu quero"               +  "agua"                 =  "Eu quero agua"
+"Eu nao quero"           +  "comida"               =  "Eu nao quero comida"
+"Eu preciso"             +  "banheiro"             =  "Eu preciso de banheiro"
+"Eu preciso"             +  "ajuda"                =  "Eu preciso de ajuda"</div>
+
+<p>Com <strong>8 contextos</strong> e <strong>25 objetos</strong>, o usuario pode formar <strong>200+ frases diferentes</strong>. Com 6 idiomas disponiveis (ingles, portugues, espanhol, frances, mandarim, arabe), o mesmo gesto funciona em qualquer lugar do mundo.</p>
+
+<h3>Por que dois gestos e nao um?</h3>
+
+<p>Um gesto por palavra limitaria o vocabulario — 50 gestos = 50 palavras. Dois gestos combinados multiplicam: 8 x 25 = 200 frases com apenas 33 gestos treinados.</p>
+
+<p>Alem disso, a combinacao permite <strong>nuance</strong>: "quero agua" vs "nao quero agua" usa o mesmo objeto (agua) com contexto diferente (quero vs nao quero). O usuario nao precisa treinar "quero agua" e "nao quero agua" separadamente.</p>
+
+<hr>
+
+<!-- ==================== PERSONAS ==================== -->
+<h2>Para Quem o GESTUUM Ajuda</h2>
+
+<div class="no-break">
+<h3>Maria, 45 anos — AVC</h3>
+
+<p>Maria era professora de historia. Ha 8 meses teve um AVC que afetou a area de Broca no cerebro. Ela entende perfeitamente o que dizem, le, escreve com dificuldade — mas as palavras nao saem. Os medicos chamam de <strong>afasia expressiva</strong>.</p>
+
+<p>Com o GESTUUM no pulso, Maria faz um gesto com a mao esquerda ("eu quero") e outro com a direita ("cafe"). O dispositivo fala por ela: <em>"Eu quero cafe"</em>. A voz pode ser feminina, na idade dela, no idioma dela.</p>
+
+<p class="highlight">Ela nao perdeu a inteligencia. Perdeu a voz. O GESTUUM devolve.</p>
+</div>
+
+<div class="no-break">
+<h3>Lucas, 8 anos — Autismo nao-verbal</h3>
+
+<p>Lucas nunca falou. Ele entende instrucoes, reage a musica, ri de piadas. Mas nao consegue articular palavras. Seus pais aprenderam a interpretar choros e comportamentos, mas em situacoes novas (escola, hospital) ninguem entende o que ele quer.</p>
+
+<p>Com o GESTUUM, Lucas treinou 6 gestos basicos com a ajuda da mae. Agora na escola, quando quer ir ao banheiro, faz dois gestos e o dispositivo fala: <em>"Eu preciso de banheiro"</em>. A professora entende. Lucas sorri.</p>
+
+<div class="callout">Para criancas autistas sensiveis a sons, o modo silencioso desativa os beeps de erro — pensado para nao causar sobrecarga sensorial.</div>
+</div>
+
+<div class="no-break">
+<h3>Joao, 32 anos — Paralisia cerebral</h3>
+
+<p>Joao tem paralisia cerebral que afeta a fala e os membros superiores. Ele consegue mover os bracos com limitacao — movimentos amplos sao dificeis, mas movimentos curtos do pulso sao possiveis.</p>
+
+<p>O GESTUUM se adapta: o nivel de sensibilidade pode ser ajustado. No modo "limitado", gestos menores sao aceitos. Os sensores sao leves (26g cada) e ficam no pulso como um relogio — nao invadem, nao incomodam.</p>
+
+<p class="highlight">O dispositivo se adapta a pessoa. Nao e a pessoa que se adapta ao dispositivo.</p>
+</div>
+
+<hr>
+
+<!-- ==================== MERCADO ==================== -->
+<h2>O Que Existe Hoje no Mercado</h2>
+
+<h3>Solucoes de alta tecnologia (inacessiveis)</h3>
+
+<table>
+  <tr><th>Solucao</th><th>O que faz</th><th>Custo</th><th>Acessibilidade real</th></tr>
+  <tr><td><strong>Neuralink</strong> (Elon Musk)</td><td>Chip implantado no cerebro. Controla telas por pensamento</td><td>R$200.000+ (com cirurgia)</td><td>5 pessoas no mundo receberam. Requer cirurgia cerebral</td></tr>
+  <tr><td><strong>Tobii Dynavox</strong></td><td>Rastreamento ocular + tela touch. Fala sintetizada</td><td>R$30.000-80.000</td><td>Funcional mas caro. Nao coberto pelo SUS. Importado</td></tr>
+  <tr><td><strong>Proloquo2Go</strong></td><td>App de CAA com simbolos e vozes</td><td>R$1.300 (app) + R$3.000-8.000 (iPad)</td><td>Excelente mas requer Apple. Total: R$4.300-9.300</td></tr>
+</table>
+
+<h3>Solucoes gratuitas (limitadas)</h3>
+
+<table>
+  <tr><th>Solucao</th><th>O que faz</th><th>Limitacao</th></tr>
+  <tr><td><strong>ARASAAC</strong></td><td>Pictogramas gratuitos para pranchas de comunicacao</td><td>Precisa imprimir, plastificar, carregar. Nao fala</td></tr>
+  <tr><td><strong>Google Project Relate</strong></td><td>IA para fala nao-padrao</td><td>So ingles. Nao aceita novos usuarios. Precisa que a pessoa TENTE falar</td></tr>
+</table>
+
+<h3>O gap que o GESTUUM preenche</h3>
+
+<div class="comparison-box">
+<div class="code-block" style="border:none; background:transparent; margin:0; padding:0;">Neuralink:       R$200.000+ | Cirurgia cerebral | 5 pessoas no mundo
+Tobii Dynavox:   R$50.000+  | Importado         | Poucas familias conseguem
+Proloquo2Go:     R$5.000+   | Requer Apple      | Classe media-alta
+ARASAAC:         Gratuito   | Nao fala          | Precisa de impressora
+
+GESTUUM:         ~R$600     | Sem cirurgia      | Qualquer familia
+                            | Sem celular       | Sem internet para funcionar
+                            | Sem dependencia   | Funciona offline, no pulso</div>
+</div>
+
+<p><strong>O GESTUUM custa 50x a 300x menos que as alternativas de alta tecnologia.</strong> Com ~R$600, uma familia pode dar voz a seu filho. Nao precisa de iPad, nao precisa de cirurgia, nao precisa de internet.</p>
+
+<hr>
+
+<!-- ==================== OPEN SOURCE ==================== -->
+<h2>Codigo Aberto: Por Que Importa</h2>
+
+<p>O GESTUUM e <strong>open source</strong> (codigo aberto) com licenca <strong>nao-comercial</strong>. Isso significa que qualquer pessoa pode usar, modificar e distribuir — mas <strong>nao pode vender</strong>. Acessibilidade nao e produto. E direito.</p>
+
+<p>O projeto nao pretende ser perfeito agora. A ideia e ser o <strong>inicio de um movimento global</strong>: publicar o codigo, a documentacao, os esquemas e convidar o mundo a contribuir. Cada pessoa que melhora o GESTUUM ajuda 250 milhoes de outras.</p>
+
+<div class="no-break">
+<h3>1. Qualquer pessoa pode construir a sua versao</h3>
+<p>Todo o codigo, os esquemas, as instrucoes estao publicados no GitHub. Uma escola tecnica em Sao Paulo, uma universidade na India, um maker no Quenia, um pai engenheiro na Alemanha — qualquer um pode montar seu GESTUUM, adaptar ao seu idioma, ajustar aos gestos da sua cultura.</p>
+</div>
+
+<div class="no-break">
+<h3>2. Qualquer pessoa pode melhorar</h3>
+<p>Um terapeuta ocupacional pode sugerir gestos melhores. Um programador pode otimizar o reconhecimento. Um designer pode melhorar a interface. Um linguista pode adicionar um novo idioma. O projeto cresce com a comunidade, nao depende de uma empresa.</p>
+</div>
+
+<div class="no-break">
+<h3>3. O conhecimento nao morre</h3>
+<p>Projetos proprietarios morrem quando a empresa decide. O Proloquo2Go so funciona em Apple — se a Apple mudar algo, os usuarios ficam refens. O GESTUUM funciona em hardware generico que qualquer loja de eletronica vende. Se o criador original parar, a comunidade continua.</p>
+</div>
+
+<div class="no-break">
+<h3>4. A unica restricao: nao pode vender</h3>
+<p>O codigo e livre para uso pessoal, educacional, institucional e de pesquisa. Hospitais, escolas, ONGs, familias — todos podem usar sem custo. A unica restricao e que <strong>ninguem pode transformar em produto comercial</strong>. O GESTUUM existe para incluir, nao para lucrar.</p>
+</div>
+
+<h3>Projetos open source que inspiram</h3>
+
+<table>
+  <tr><th>Projeto</th><th>O que faz</th></tr>
+  <tr><td><strong>CoughDrop</strong></td><td>App de CAA open source, multiplataforma</td></tr>
+  <tr><td><strong>OpenAAC</strong></td><td>Materiais de comunicacao aumentativa gratuitos</td></tr>
+  <tr><td><strong>ARASAAC</strong></td><td>Pictogramas Creative Commons (milhares de simbolos)</td></tr>
+  <tr><td><strong>GESTUUM</strong></td><td>Wearable gesto&#8594;voz, hardware + software abertos</td></tr>
+</table>
+
+<hr>
+
+<!-- ==================== PWA ==================== -->
+<h2>O PWA: Pais Configuram Sozinhos</h2>
+
+<p>O GESTUUM tem um <strong>aplicativo web</strong> (PWA) que funciona no celular e no computador sem instalar nada — basta abrir o site no Chrome.</p>
+
+<div class="no-break">
+<h3>Instalacao inicial (uma vez, por cabo)</h3>
+<p>A primeira instalacao do firmware e feita conectando o dispositivo ao computador via cabo <strong>USB Type-C</strong>. Pelo site, o pai/mae clica em "Instalar" e o sistema grava automaticamente o software no dispositivo. Esse passo e feito uma unica vez.</p>
+</div>
+
+<div class="no-break">
+<h3>Configuracao e atualizacoes (pelo celular, via Bluetooth)</h3>
+<p>Apos a instalacao, toda a configuracao e feita pelo celular via Bluetooth:</p>
+<ul>
+  <li><strong>Treinar gestos</strong> — ensinar ao dispositivo qual movimento = qual palavra</li>
+  <li><strong>Apagar e re-treinar</strong> — se o gesto ficou ruim, apagar e refazer</li>
+  <li><strong>Trocar idioma</strong> — portugues, ingles, espanhol, frances, mandarim, arabe</li>
+  <li><strong>Trocar voz</strong> — homem, mulher, menino ou menina (voz sintetizada natural)</li>
+  <li><strong>Ajustar sensibilidade</strong> — gestos maiores ou menores conforme a capacidade</li>
+  <li><strong>Exportar/importar gestos</strong> — salvar os gestos num arquivo e restaurar depois</li>
+</ul>
+
+<p><strong>Nenhum conhecimento tecnico necessario.</strong> Nao precisa saber programar. Nao precisa abrir o dispositivo. A instalacao e por cabo (uma vez), as atualizacoes e configuracoes sao por Bluetooth (sempre que quiser).</p>
+</div>
+
+<div class="no-break">
+<h3>E se o pai nao tem celular?</h3>
+<p>O dispositivo funciona <strong>sem celular</strong> apos configurado. O celular so e necessario para treinar novos gestos e ajustar configuracoes. No dia a dia, o GESTUUM e autonomo — sem internet, sem celular, sem depender de ninguem.</p>
+</div>
+
+<hr>
+
+<!-- ==================== COMPARACAO ==================== -->
+<h2>Comparacao Honesta: O Que Funciona e O Que Nao</h2>
+
+<table>
+  <tr><th>Criterio</th><th>GESTUUM</th><th>Neuralink</th><th>Tobii Dynavox</th><th>Proloquo2Go</th></tr>
+  <tr><td><strong>Custo</strong></td><td>~R$600</td><td>R$200.000+</td><td>R$50.000+</td><td>R$5.000+</td></tr>
+  <tr><td><strong>Precisa de cirurgia?</strong></td><td>Nao</td><td>Sim (cerebral)</td><td>Nao</td><td>Nao</td></tr>
+  <tr><td><strong>Precisa de celular?</strong></td><td>So para configurar</td><td>Nao</td><td>Nao</td><td>Sim (Apple)</td></tr>
+  <tr><td><strong>Precisa de internet?</strong></td><td>Nao (apos config)</td><td>Sim</td><td>Nao</td><td>Nao</td></tr>
+  <tr><td><strong>Funciona offline?</strong></td><td>Sim</td><td>Parcial</td><td>Sim</td><td>Sim</td></tr>
+  <tr><td><strong>Idiomas</strong></td><td>6</td><td>1 (ingles)</td><td>Varios</td><td>Varios</td></tr>
+  <tr><td><strong>Codigo aberto?</strong></td><td>Sim</td><td>Nao</td><td>Nao</td><td>Nao</td></tr>
+  <tr><td><strong>Quem pode ter?</strong></td><td>Qualquer familia</td><td>Pouquissimos</td><td>Classe alta</td><td>Classe media+</td></tr>
+  <tr><td><strong>Status</strong></td><td>Prototipo funcional</td><td>5 pacientes</td><td>Comercial</td><td>Comercial</td></tr>
+  <tr><td><strong>Para quem serve</strong></td><td>Autismo, AVC, PC, Down</td><td>ELA, paralisia</td><td>ELA, PC, autismo</td><td>Autismo, PC</td></tr>
+</table>
+
+<div class="no-break">
+<h3>O que o GESTUUM ainda nao faz (honestidade)</h3>
+<ul>
+  <li><strong>Precisao dos gestos:</strong> Estamos na versao 1 do reconhecimento. A versao 2 (em desenvolvimento) vai melhorar significativamente a precisao</li>
+  <li><strong>Quantidade de gestos:</strong> 53 gestos carregados, 4 validados na demo v1. Meta: todos os 53 validados com precisao >95%</li>
+  <li><strong>Validacao clinica:</strong> Ainda nao foi testado com pacientes reais em ambiente clinico</li>
+  <li><strong>Certificacao:</strong> Nao e um dispositivo medico certificado (ainda)</li>
+</ul>
+
+<p><strong>Somos honestos sobre o que falta. Mas o conceito funciona, o hardware custa ~R$600, e o codigo e aberto para qualquer um melhorar.</strong></p>
+</div>
+
+<hr>
+
+<!-- ==================== IMPACTO ==================== -->
+<h2>Estimativa de Impacto</h2>
+
+<h3>No Brasil</h3>
+<ul>
+  <li><strong>14,4 milhoes</strong> de pessoas com deficiencia (IBGE 2022)</li>
+  <li><strong>2,7 milhoes</strong> com dificuldade de comunicacao</li>
+  <li>Destas, estimamos que <strong>500.000 a 1 milhao</strong> poderiam se beneficiar diretamente de um dispositivo como o GESTUUM (pessoas com cognicao preservada mas sem fala)</li>
+</ul>
+
+<h3>No mundo</h3>
+<ul>
+  <li><strong>250 milhoes</strong> de pessoas com fala nao-padrao</li>
+  <li>Destas, <strong>50 a 100 milhoes</strong> poderiam se beneficiar de um dispositivo vestivel de baixo custo para comunicacao gestual</li>
+</ul>
+
+<div class="no-break">
+<h3>O que ~R$600 pode mudar</h3>
+
+<p>Uma familia de baixa renda no interior do Brasil nao tem acesso a um Tobii de R$50.000. Nao tem iPad para o Proloquo2Go. Nao tem como levar o filho para cirurgia cerebral do Neuralink.</p>
+
+<p>Mas pode comprar dois M5StickC Plus2 por ~R$600 na internet. Acessa o site gestuum.com, conecta o dispositivo por cabo USB-C e segue o passo a passo na tela — a instalacao foi pensada para quem nunca mexeu com tecnologia. O site guia cada etapa com instrucoes visuais. Depois, configura pelo celular via Bluetooth. Sem terminal, sem codigo, sem complicacao.</p>
+
+<p class="highlight">Comunicacao e um direito. Nao um privilegio.</p>
+</div>
+
+<hr>
+
+<!-- ==================== FEIRA ==================== -->
+<h2>Para a Feira de Ciencias</h2>
+
+<p>O GESTUUM nao e apenas um projeto de tecnologia. E um projeto de <strong>inclusao</strong>.</p>
+
+<p>A tecnologia e o meio — nao o fim. O fim e dar voz a quem nao tem. O fim e uma crianca autista poder dizer "eu quero agua" na escola. O fim e um avo com afasia poder dizer "eu te amo" para os netos.</p>
+
+<p>A matematica por tras dos gestos (PCA, DTW, correlacao) e fascinante. Mas o que realmente importa e o sorriso de uma mae quando ouve a "voz" do filho pela primeira vez.</p>
+
+<p class="highlight">GESTUUM: dos gestos, a voz. De todos, para todos.</p>
+
+<!-- ==================== RODAPE ==================== -->
+<div class="footer">
+  <strong>Projeto GESTUUM</strong> — Science Fair COREE 2026<br>
+  Codigo aberto: github.com/alexandrejalkh/gestuum<br>
+  6 idiomas | 200+ frases | ~R$600 | Open Source
+</div>
+
+<div class="sources">
+  <strong>Fontes:</strong>
+  IBGE Censo 2022: 14,4 milhoes de pessoas com deficiencia no Brasil &bull;
+  OMS: 1,3 bilhao de pessoas com deficiencia no mundo (16%) &bull;
+  Google Project Relate: 250 milhoes com fala nao-padrao &bull;
+  CDC 2023: autismo 1 em 36 criancas (EUA) &bull;
+  World Stroke Organization 2024: 12 milhoes de AVCs/ano &bull;
+  ASHA: 21-38% dos sobreviventes de AVC desenvolvem afasia &bull;
+  Global Down Syndrome Foundation: 6 milhoes no mundo &bull;
+  Tobii Dynavox, Proloquo2Go, Neuralink: sites oficiais &bull;
+  Etymonline: origem de "gesture" / "gestus"
+</div>
+
+</body>
+</html>

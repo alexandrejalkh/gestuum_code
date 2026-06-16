@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GESTUUM — A Tecnologia por tras da Voz</title>
+<style>
+  @page {
+    size: A4;
+    margin: 20mm 18mm 20mm 18mm;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    font-size: 11pt;
+    line-height: 1.55;
+    color: #1a1a1a;
+    background: #fff;
+    max-width: 210mm;
+    margin: 0 auto;
+    padding: 18mm;
+  }
+
+  h1 {
+    font-size: 22pt;
+    color: #1b6b4a;
+    text-align: center;
+    margin-bottom: 4px;
+    letter-spacing: 1px;
+  }
+
+  .subtitle {
+    text-align: center;
+    font-style: italic;
+    color: #555;
+    font-size: 10pt;
+    margin-bottom: 22px;
+    line-height: 1.5;
+  }
+
+  h2 {
+    font-size: 14pt;
+    color: #1b6b4a;
+    border-bottom: 2px solid #7BC09A;
+    padding-bottom: 3px;
+    margin-top: 26px;
+    margin-bottom: 10px;
+    page-break-after: avoid;
+  }
+
+  h3 {
+    font-size: 11.5pt;
+    color: #2a2a2a;
+    margin-top: 16px;
+    margin-bottom: 6px;
+    page-break-after: avoid;
+  }
+
+  hr {
+    border: none;
+    border-top: 1px solid #ccc;
+    margin: 20px 0;
+  }
+
+  p { margin-bottom: 8px; }
+
+  strong { color: #1a1a1a; }
+
+  em { color: #444; }
+
+  .callout {
+    background: #f0faf4;
+    border-left: 4px solid #7BC09A;
+    padding: 10px 14px;
+    margin: 12px 0;
+    font-size: 10.5pt;
+    color: #333;
+  }
+
+  .callout-strong {
+    background: #fff8e1;
+    border-left: 4px solid #f5a623;
+    padding: 10px 14px;
+    margin: 12px 0;
+    font-size: 10.5pt;
+    font-weight: 600;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0 14px 0;
+    font-size: 9.5pt;
+    page-break-inside: avoid;
+  }
+
+  th {
+    background: #1b6b4a;
+    color: #fff;
+    padding: 6px 8px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 9pt;
+  }
+
+  td {
+    padding: 5px 8px;
+    border-bottom: 1px solid #ddd;
+    vertical-align: top;
+  }
+
+  tr:nth-child(even) td { background: #f9f9f9; }
+
+  .code-block {
+    background: #f4f4f4;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 10px 14px;
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 9.5pt;
+    line-height: 1.5;
+    margin: 10px 0 14px 0;
+    white-space: pre;
+    page-break-inside: avoid;
+  }
+
+  .code-dark {
+    background: #1A202C;
+    color: #E2E8F0;
+    border: none;
+    border-radius: 6px;
+    padding: 12px 14px;
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 9pt;
+    line-height: 1.5;
+    margin: 10px 0 14px 0;
+    white-space: pre;
+    page-break-inside: avoid;
+  }
+
+  ul, ol {
+    margin: 6px 0 10px 22px;
+  }
+
+  li { margin-bottom: 4px; }
+
+  .comparison-box {
+    background: #f7fdf9;
+    border: 1px solid #7BC09A;
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin: 12px 0;
+    page-break-inside: avoid;
+  }
+
+  .highlight {
+    font-size: 11pt;
+    font-weight: 700;
+    color: #1b6b4a;
+    text-align: center;
+    margin: 14px 0;
+  }
+
+  .diagram-box {
+    background: #fafbfc;
+    border: 2px solid #7BC09A;
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 14px 0;
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 9.5pt;
+    line-height: 1.6;
+    white-space: pre;
+    page-break-inside: avoid;
+    text-align: center;
+  }
+
+  .spec-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin: 12px 0;
+  }
+
+  .spec-card {
+    background: #f7fdf9;
+    border: 1px solid #d4edda;
+    border-radius: 6px;
+    padding: 10px 14px;
+    page-break-inside: avoid;
+  }
+
+  .spec-card h4 {
+    font-size: 10pt;
+    color: #1b6b4a;
+    margin-bottom: 6px;
+    border-bottom: 1px solid #d4edda;
+    padding-bottom: 3px;
+  }
+
+  .spec-card p {
+    font-size: 9.5pt;
+    margin-bottom: 4px;
+  }
+
+  .footer {
+    margin-top: 30px;
+    padding-top: 12px;
+    border-top: 2px solid #7BC09A;
+    text-align: center;
+    font-size: 9.5pt;
+    color: #666;
+    line-height: 1.6;
+  }
+
+  .footer strong { color: #1b6b4a; }
+
+  .sources {
+    font-size: 8.5pt;
+    color: #888;
+    margin-top: 16px;
+    line-height: 1.5;
+  }
+
+  .sources strong { color: #666; }
+
+  .no-break { page-break-inside: avoid; }
+
+  @media print {
+    body { padding: 0; max-width: none; }
+    h2 { page-break-after: avoid; }
+    table, .code-block, .code-dark, .comparison-box, .diagram-box { page-break-inside: avoid; }
+    .no-break { page-break-inside: avoid; }
+    .spec-grid { page-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ==================== CAPA ==================== -->
+<h1>GESTUUM</h1>
+<p class="subtitle">
+  A Tecnologia por tras da Voz<br>
+  Hardware, software, protocolos e comunicacao — como dois microcontroladores,<br>
+  um punhado de sensores e codigo aberto transformam gestos em fala.
+</p>
+
+<hr>
+
+<!-- ==================== VISAO GERAL ==================== -->
+<h2>1. Visao Geral da Arquitetura</h2>
+
+<p>O GESTUUM e um sistema distribuido composto por <strong>2 microcontroladores</strong> que se comunicam sem fio, um <strong>aplicativo web (PWA)</strong> para configuracao, e um <strong>pipeline de audio</strong> pre-gerado por inteligencia artificial. Nenhuma parte do sistema depende de internet para funcionar no dia a dia — tudo roda localmente, no pulso do usuario.</p>
+
+<div class="diagram-box">
+ SENSOR B                              SENSOR A
+ (mao direita)                         (mao esquerda)
+ M5StickC Plus2                        M5StickC Plus2 + HAT-SPK2
+       |                                     |
+       |        ESP-NOW (canal 13)           |
+       |        IMU 50Hz, &lt;3ms              |
+       |  --------------------------------&gt;  |
+       |                                     |
+       |                               [CEREBRO]
+       |                             Reconhecimento
+       |                             Audio I2S + BT
+       |                             BLE + Serial
+       |                             SPIFFS (5.4 MB)
+</div>
+
+<p>O <strong>Sensor A</strong> e o cerebro do sistema — faz o reconhecimento de gestos, toca audio, e se comunica com o celular. O <strong>Sensor B</strong> e um sensor puro que envia dados IMU 50 vezes por segundo.</p>
+
+<hr>
+
+<!-- ==================== HARDWARE ==================== -->
+<h2>2. Hardware: Os Dispositivos</h2>
+
+<h3>2.1 Sensor A — O Cerebro (mao esquerda)</h3>
+
+<div class="spec-grid">
+  <div class="spec-card">
+    <h4>Processador</h4>
+    <p><strong>MCU:</strong> ESP32-PICO-V3-02 (dual-core Xtensa LX6, 240 MHz)</p>
+    <p><strong>RAM:</strong> 520 KB SRAM + PSRAM externo</p>
+    <p><strong>Flash:</strong> 8 MB (2.5 MB firmware + 5.4 MB SPIFFS)</p>
+    <p><strong>Placa:</strong> M5StickC Plus2</p>
+  </div>
+  <div class="spec-card">
+    <h4>Sensores e Perifericos</h4>
+    <p><strong>IMU:</strong> MPU6886 (acelerometro + giroscopio, 6 eixos)</p>
+    <p><strong>Tela:</strong> TFT 135x240 px (rotacao: 240x135 landscape)</p>
+    <p><strong>Audio:</strong> HAT-SPK2 (MAX98357A, I2S, 1W)</p>
+    <p><strong>Bateria:</strong> LiPo 200 mAh integrada</p>
+  </div>
+</div>
+
+<p><strong>Funcoes:</strong> Captura IMU local, recebe IMU do Sensor B, reconhecimento de gestos (Matrix3D + DTW + Orbital), reproducao de audio (I2S + Bluetooth A2DP), servidor BLE GATT para configuracao via celular, interface serial USB para computador.</p>
+
+<div class="callout">
+  O conceito do GESTUUM e sempre com dois sensores: mao esquerda (contexto) + mao direita (objeto) = frase composta. Os dois dispositivos juntos formam a unidade funcional do sistema.
+</div>
+
+<h3>2.2 Sensor B — O Sensor Puro (mao direita)</h3>
+
+<div class="spec-grid">
+  <div class="spec-card">
+    <h4>Hardware</h4>
+    <p><strong>MCU:</strong> ESP32-PICO-V3-02 (identico ao Sensor A)</p>
+    <p><strong>Placa:</strong> M5StickC Plus2</p>
+    <p><strong>IMU:</strong> MPU6886 (mesma configuracao)</p>
+    <p><strong>Tela:</strong> TFT 135x240 (status + bateria)</p>
+  </div>
+  <div class="spec-card">
+    <h4>Funcao</h4>
+    <p><strong>Unica tarefa:</strong> Ler IMU a 50 Hz e enviar via ESP-NOW</p>
+    <p><strong>Pacote:</strong> 20 bytes (timestamp + 6 eixos + bateria)</p>
+    <p><strong>Sequencia:</strong> Numero sequencial para detectar perda de pacotes</p>
+    <p><strong>Reconexao:</strong> Heartbeat broadcast a cada 10s se desconectar</p>
+  </div>
+</div>
+
+<p>O Sensor B nao faz nenhum processamento de gestos — ele e um <strong>streaming puro de dados IMU</strong>. Toda a inteligencia esta no Sensor A. Isso simplifica o firmware e reduz consumo de energia.</p>
+
+<h3>2.3 Custo Total do Hardware</h3>
+
+<table>
+  <tr><th>Componente</th><th>Modelo</th><th>Preco Aproximado</th></tr>
+  <tr><td><strong>Sensor A</strong></td><td>M5StickC Plus2 + HAT-SPK2</td><td>~US$ 25 + US$ 10</td></tr>
+  <tr><td><strong>Sensor B</strong></td><td>M5StickC Plus2</td><td>~US$ 25</td></tr>
+  <tr><td><strong>Speaker BT</strong></td><td>Qualquer caixinha Bluetooth (opcional)</td><td>~US$ 10-30</td></tr>
+  <tr><td colspan="2" style="text-align:right;"><strong>Total (A+B+HAT):</strong></td><td><strong>~R$ 600</strong></td></tr>
+</table>
+
+<p class="highlight">Todo o hardware e comprado pronto. Nenhuma soldagem, nenhuma placa customizada, nenhuma impressao 3D obrigatoria.</p>
+
+<hr>
+
+<!-- ==================== COMUNICACAO ==================== -->
+<h2>3. Comunicacao: Como os Dispositivos Conversam</h2>
+
+<p>O GESTUUM usa <strong>4 protocolos de comunicacao</strong> diferentes, cada um escolhido por uma razao especifica:</p>
+
+<table>
+  <tr><th>Protocolo</th><th>Entre quem</th><th>Para que</th><th>Latencia</th></tr>
+  <tr><td><strong>ESP-NOW</strong></td><td>Sensor B &rarr; Sensor A</td><td>Dados IMU em tempo real (50 Hz)</td><td>&lt; 3 ms</td></tr>
+  <tr><td><strong>BLE GATT</strong></td><td>Celular &harr; Sensor A</td><td>Configuracao (voz, gestos, sensibilidade)</td><td>~50 ms</td></tr>
+  <tr><td><strong>USB Serial</strong></td><td>Computador &harr; Sensor A</td><td>Configuracao + debug + instalacao</td><td>~10 ms</td></tr>
+  <tr><td><strong>Bluetooth A2DP</strong></td><td>Sensor A &rarr; Caixa de som</td><td>Audio em caixa externa (opcional)</td><td>~100 ms</td></tr>
+</table>
+
+<h3>3.1 ESP-NOW — Comunicacao entre Sensores</h3>
+
+<p>O ESP-NOW e um protocolo proprietario da Espressif (fabricante do ESP32) que permite comunicacao <strong>ponto-a-ponto sem WiFi</strong>. Nao precisa de roteador, nao precisa de internet, nao precisa de pareamento complexo.</p>
+
+<div class="comparison-box">
+<strong>Por que ESP-NOW e nao WiFi ou Bluetooth?</strong>
+<ul>
+  <li><strong>Latencia:</strong> ESP-NOW &lt; 3 ms vs WiFi ~50-200 ms vs BLE ~50 ms</li>
+  <li><strong>Overhead:</strong> Pacotes de 20 bytes sem stack TCP/IP (zero handshake)</li>
+  <li><strong>Energia:</strong> Transmissao curta e direta, sem manter conexao ativa</li>
+  <li><strong>Simplicidade:</strong> Um dispositivo envia, outro recebe — sem servidor, sem IP</li>
+</ul>
+<p>Para dados de IMU a 50 Hz (um pacote a cada 20 ms), cada milissegundo importa. O ESP-NOW e a unica opcao viavel nessa faixa.</p>
+</div>
+
+<p><strong>Configuracao tecnica:</strong></p>
+<ul>
+  <li><strong>Canal:</strong> 13 (frequencia 2.472 GHz) — evita canais WiFi comuns (1, 6, 11)</li>
+  <li><strong>Heartbeat:</strong> Pacote de 3 bytes a cada 1000 ms para detectar desconexao</li>
+  <li><strong>Timeout:</strong> 5000 ms sem heartbeat = dispositivo desconectado</li>
+  <li><strong>Pareamento:</strong> Sensor B descobre Sensor A via broadcast de heartbeat</li>
+</ul>
+
+<h3>3.2 Pacotes ESP-NOW — O Que Trafega no Ar</h3>
+
+<p>Cada tipo de mensagem tem um formato especifico, otimizado para o minimo de bytes:</p>
+
+<table>
+  <tr><th>Pacote</th><th>Tipo</th><th>Tamanho</th><th>Direcao</th><th>Conteudo</th></tr>
+  <tr><td><strong>IMUPacket</strong></td><td>0x01</td><td>20 bytes</td><td>B &rarr; A</td><td>timestamp, seq, ax/ay/az, gx/gy/gz, bateria</td></tr>
+  <tr><td><strong>EmergencyPacket</strong></td><td>0x04</td><td>4 bytes</td><td>Broadcast</td><td>nivel (normal/urgente/critico)</td></tr>
+  <tr><td><strong>HeartbeatPacket</strong></td><td>0x05</td><td>3 bytes</td><td>Bidirecional</td><td>remetente (A/B), bateria (%)</td></tr>
+  <tr><td><strong>SetChannelPacket</strong></td><td>0x07</td><td>2 bytes</td><td>A &rarr; todos</td><td>novo canal WiFi</td></tr>
+</table>
+
+<div class="callout">
+  O pacote IMU e o mais frequente: 50 pacotes por segundo, 20 bytes cada = <strong>1000 bytes/segundo</strong>. Em uma hora de uso, isso e apenas ~3.5 MB de dados trafegando pelo ar — extremamente eficiente.
+</div>
+
+<h3>3.3 Pareamento Automatico</h3>
+
+<p>Quando os dispositivos sao ligados, o pareamento acontece automaticamente:</p>
+
+<div class="code-block">1. Sensor A liga → entra em modo PAIRING → broadcast heartbeat
+2. Sensor B liga → escuta heartbeat → envia heartbeat de resposta
+3. Sensor A recebe → flag marcada no ISR (interrupcao)
+4. No loop() principal → esp_now_add_peer() com MAC do Sensor B
+5. Pareamento completo → ambos entram em modo IDLE
+
+Tempo tipico: &lt; 2 segundos apos ligar os dois</div>
+
+<p><strong>Seguranca da implementacao:</strong> O pareamento usa callback de interrupcao (ISR) que seta apenas um flag — o processamento pesado (adicionar peer) e feito no loop principal. Isso evita crash por chamada de funcao bloqueante dentro da ISR.</p>
+
+<h3>3.4 BLE GATT — Configuracao pelo Celular</h3>
+
+<p>O Bluetooth Low Energy e usado para configuracao — o usuario conecta pelo celular (via web app) e pode treinar gestos, trocar voz, mudar idioma, ajustar sensibilidade.</p>
+
+<div class="code-block">Servico BLE (GATT):
+  UUID: 4e5f6a7b-8c9d-0e1f-2a3b-4c5d6e7f8a9b
+
+  Caracteristicas:
+  ├─ CMD_TX  (Write)   ...8a9c  → App envia comandos JSON
+  ├─ CMD_RX  (Notify)  ...8a9d  → Dispositivo responde JSON
+  └─ AUDIO_TX (Write)  ...8a9e  → Upload de audio (base64)</div>
+
+<p><strong>Protocolo:</strong> Comandos em JSON delimitados por newline (\n). Buffer de 512 bytes. Chunking de 20 bytes com 15 ms de delay entre fragmentos. Reconexao com backoff exponencial (2s, 4s, 8s).</p>
+
+<p><strong>Ativacao:</strong> BLE fica desligado por padrao (economia de energia). Ativado por: segurar botoes A+B por 3 segundos, ou triplo-clique no botao B.</p>
+
+<h3>3.5 Bluetooth A2DP — Audio Externo</h3>
+
+<p>Alem do alto-falante interno (HAT-SPK2), o Sensor A pode transmitir audio para qualquer <strong>caixa de som Bluetooth</strong> via protocolo A2DP (Advanced Audio Distribution Profile) — o mesmo protocolo que celulares usam para fones de ouvido.</p>
+
+<ul>
+  <li><strong>Formato:</strong> PCM 16-bit, 48 kHz, mono</li>
+  <li><strong>Coexistencia:</strong> BLE (config) e A2DP (audio) funcionam simultaneamente no mesmo ESP32</li>
+  <li><strong>Speaker salvo:</strong> MAC da caixa de som e gravado em NVS — reconecta automaticamente</li>
+  <li><strong>Buffer:</strong> Mutex-protected com alocacao em PSRAM para audios grandes</li>
+</ul>
+
+<div class="callout">
+  O audio interno (HAT-SPK2) e suficiente para ambientes quietos. A caixa Bluetooth e recomendada para ambientes ruidosos, como escola ou hospital, onde o volume de 1W do speaker interno pode nao ser suficiente.
+</div>
+
+<h3>3.6 USB Serial — Computador</h3>
+
+<p>A conexao por cabo USB-C e usada para: instalacao inicial do firmware, debug durante desenvolvimento, e como alternativa ao BLE para configuracao.</p>
+
+<ul>
+  <li><strong>Baud rate:</strong> 115200</li>
+  <li><strong>Protocolo:</strong> JSON por linha (\n), buffer de 1024 bytes</li>
+  <li><strong>Funciona em paralelo</strong> com BLE — ambos aceitam os mesmos comandos</li>
+  <li><strong>API Web:</strong> Web Serial API (Chrome/Edge) — acesso direto do navegador ao USB</li>
+</ul>
+
+<hr>
+
+<!-- ==================== SOFTWARE ==================== -->
+<h2>4. Software: A Inteligencia do Sistema</h2>
+
+<h3>4.1 Stack de Desenvolvimento</h3>
+
+<table>
+  <tr><th>Camada</th><th>Tecnologia</th><th>Detalhes</th></tr>
+  <tr><td><strong>Firmware</strong></td><td>C++ / Arduino / PlatformIO</td><td>~12.800 linhas, ESP32 (espressif32@6.12.0)</td></tr>
+  <tr><td><strong>Web App (PWA)</strong></td><td>HTML5 + CSS3 + JavaScript vanilla</td><td>~4.000 linhas, sem frameworks</td></tr>
+  <tr><td><strong>Ferramentas</strong></td><td>Python 3</td><td>~2.000 linhas, geracao de audio e visualizacao</td></tr>
+  <tr><td><strong>Site publico</strong></td><td>HTML estatico</td><td>Deploy via Cloudflare Pages</td></tr>
+  <tr><td><strong>Audio TTS</strong></td><td>Google Cloud Text-to-Speech</td><td>Vozes neurais, 6 idiomas</td></tr>
+</table>
+
+<h3>4.2 Maquina de Estados — Sensor A</h3>
+
+<p>O firmware do Sensor A opera como uma <strong>maquina de estados finita</strong>. A cada momento, o dispositivo esta em exatamente um estado:</p>
+
+<div class="code-dark">Estado          Descricao                      Transicao
+─────────────────────────────────────────────────────────────────
+INIT            Boot + inicializacao           → PAIRING
+PAIRING         Esperando Sensor B             → IDLE
+IDLE            Pronto (push-to-talk)          → RECORDING (double-tap)
+RECORDING       Capturando IMU                 → MATCHING (fim do gesto)
+MATCHING        Comparando com templates       → SPEAKING / CONTEXT_WAIT
+SPEAKING        Reproduzindo audio             → IDLE (fim do audio)
+CONTEXT_WAIT    Contexto detectado, esperando  → SPEAKING (objeto detectado)
+                objeto (timeout 8s)            → IDLE (timeout)
+EMERGENCY       Modo SOS ativado               → IDLE (desativado)
+TRAINING        Treinamento de gesto novo      → IDLE (3 amostras salvas)</div>
+
+<h3>4.3 Arquitetura de Modulos (Sensor A)</h3>
+
+<p>O Sensor A e composto por <strong>12 modulos</strong> independentes que se comunicam pela maquina de estados:</p>
+
+<table>
+  <tr><th>Modulo</th><th>Responsabilidade</th></tr>
+  <tr><td><strong>main.cpp</strong></td><td>Orquestrador — maquina de estados, botoes, cooldowns</td></tr>
+  <tr><td><strong>IMUReader</strong></td><td>Leitura do MPU6886, filtro EMA (alpha=0.3), escala int16</td></tr>
+  <tr><td><strong>Matrix3D</strong></td><td>Discretizacao em grid 11x11x11, trajetoria, deteccao de stroke</td></tr>
+  <tr><td><strong>OrbitalExtractor</strong></td><td>8 features (PCA, jerk, simetria...), assinatura do gesto</td></tr>
+  <tr><td><strong>DTW</strong></td><td>Dynamic Time Warping para matching de trajetorias</td></tr>
+  <tr><td><strong>GestureEngine</strong></td><td>Pipeline completo: Matrix3D + DTW + Orbital + decisao</td></tr>
+  <tr><td><strong>GestureLoader</strong></td><td>Carrega/salva gestos do SPIFFS (JSON)</td></tr>
+  <tr><td><strong>AudioPlayer</strong></td><td>Playback WAV via M5.Speaker (I2S), beeps, sequencias</td></tr>
+  <tr><td><strong>BTAudio</strong></td><td>Streaming A2DP para caixa Bluetooth externa</td></tr>
+  <tr><td><strong>ESPNowComm</strong></td><td>Comunicacao ESP-NOW (pareamento, envio, recepcao)</td></tr>
+  <tr><td><strong>BLEConfig</strong></td><td>Servidor BLE GATT (3 caracteristicas, comandos JSON)</td></tr>
+  <tr><td><strong>DisplayUI</strong></td><td>Interface TFT (telas por estado, toast)</td></tr>
+  <tr><td><strong>VoiceManager</strong></td><td>4 vozes, 3 niveis de gesto, persistencia NVS</td></tr>
+</table>
+
+<h3>4.4 Pipeline de Reconhecimento</h3>
+
+<div class="diagram-box">
+    IMU 50 Hz (acelerometro + giroscopio)
+                    |
+        Double-tap detectado (2.2g)
+                    |
+           Cooldown 300ms (vibration)
+                    |
+        Calibracao de repouso (100ms)
+                    |
+         Onset: 3 amostras > 0.3g
+                    |
+     ┌──────────────┴──────────────┐
+     |                             |
+  Matrix3D                   Buffer bruto
+  Grid 11x11x11             250 amostras
+  Trajetoria                (5s max)
+     |                             |
+     |                    OrbitalExtractor
+     |                    8 features PCA
+     |                             |
+     └──────────────┬──────────────┘
+                    |
+         Offset: 25 amostras < 0.15g
+                    |
+     ┌──────────────┴──────────────┐
+     |                             |
+    DTW                       Orbital
+  Forma completa           Assinatura 8D
+  (60% do score)           (40% do score)
+     |                             |
+     └──────────────┬──────────────┘
+                    |
+        Score combinado >= 55%?
+        Ratio test <= 0.95?
+                    |
+              ┌─────┴─────┐
+              |           |
+           ACEITO      REJEITADO
+           → fala       → beep erro</div>
+
+<h3>4.5 Deteccao de Stroke (Inicio e Fim do Gesto)</h3>
+
+<p>Um dos problemas mais dificeis e saber <strong>quando o gesto comeca e quando termina</strong>. O GESTUUM usa um sistema de tres fases:</p>
+
+<table>
+  <tr><th>Fase</th><th>Condicao</th><th>Duracao</th><th>Funcao</th></tr>
+  <tr><td><strong>Cooldown</strong></td><td>Apos double-tap</td><td>15 amostras (300 ms)</td><td>Ignorar vibracao do toque</td></tr>
+  <tr><td><strong>Calibracao</strong></td><td>Mao parada</td><td>5 amostras (100 ms)</td><td>Medir magnitude de repouso</td></tr>
+  <tr><td><strong>Onset</strong></td><td>3 amostras consecutivas > repouso + 0.3g</td><td>Variavel</td><td>Inicio do movimento</td></tr>
+  <tr><td><strong>Gravacao</strong></td><td>Movimento ativo</td><td>1-3 segundos (50-150 amostras)</td><td>Captura dos dados</td></tr>
+  <tr><td><strong>Offset</strong></td><td>25 amostras consecutivas < repouso + 0.15g</td><td>500 ms de quietude</td><td>Fim do movimento</td></tr>
+</table>
+
+<div class="callout">
+  O threshold de offset (0.15g) e mais baixo que o de onset (0.3g) propositalmente — e mais dificil "sair" de um gesto do que "entrar". Isso evita falsos finais quando o usuario faz uma pausa no meio do movimento.
+</div>
+
+<hr>
+
+<!-- ==================== MEMORIA ==================== -->
+<h2>5. Memoria e Armazenamento</h2>
+
+<h3>5.1 Particoes da Flash (8 MB)</h3>
+
+<p>A memoria flash de 8 MB do ESP32 e dividida em 4 regioes:</p>
+
+<table>
+  <tr><th>Particao</th><th>Endereco</th><th>Tamanho</th><th>Funcao</th></tr>
+  <tr><td><strong>NVS</strong></td><td>0x9000</td><td>20 KB</td><td>Configuracoes persistentes (voz, sensibilidade, MAC do speaker)</td></tr>
+  <tr><td><strong>OTA</strong></td><td>0xE000</td><td>8 KB</td><td>Seletor de particao de boot</td></tr>
+  <tr><td><strong>app0</strong></td><td>0x10000</td><td>2.5 MB</td><td>Firmware compilado (codigo C++)</td></tr>
+  <tr><td><strong>SPIFFS</strong></td><td>0x290000</td><td>5.44 MB</td><td>Arquivos: audio WAV + gestos JSON + configs</td></tr>
+</table>
+
+<h3>5.2 Sistema de Arquivos SPIFFS</h3>
+
+<p>O SPIFFS (SPI Flash File System) armazena todos os dados do usuario:</p>
+
+<div class="code-block">/                          (raiz do SPIFFS — 5.44 MB)
+├── a/                     (audio — abreviado pelo limite de 31 caracteres)
+│   ├── h/                 (homem — voz masculina adulta)
+│   │   ├── agua.wav
+│   │   ├── comida.wav
+│   │   ├── ctx_01_i_want.wav
+│   │   └── ... (~30 arquivos WAV)
+│   ├── m/                 (mulher — voz feminina adulta)
+│   ├── n/                 (menino — voz masculina infantil)
+│   └── i/                 (menina — voz feminina infantil)
+│
+└── g/                     (gestos — banco de dados de templates)
+    ├── gestures.json      (banco de gestos treinados)
+    ├── contexts.json      (8 contextos: "I want", "I need"...)
+    └── custom.json        (gestos customizados pelo usuario)</div>
+
+<div class="callout-strong">
+  Limitacao: O SPIFFS so suporta UMA voz por vez no dispositivo (5.44 MB ÷ ~30 arquivos WAV = ajuste apertado). Trocar de voz exige re-upload via web app. Backup obrigatorio antes de trocar.
+</div>
+
+<h3>5.3 NVS — Configuracoes Persistentes</h3>
+
+<p>O NVS (Non-Volatile Storage) guarda configuracoes que sobrevivem a reinicializacao:</p>
+
+<ul>
+  <li><strong>Preferencia de voz:</strong> homem/mulher/menino/menina (1 byte)</li>
+  <li><strong>Nome do dispositivo:</strong> nome BLE customizado (max 24 caracteres)</li>
+  <li><strong>MAC do speaker BT:</strong> endereco da caixa de som salva (6 bytes)</li>
+  <li><strong>Canal ESP-NOW:</strong> canal WiFi atual (1 byte)</li>
+  <li><strong>Nivel de gesto:</strong> limitado/padrao/avancado</li>
+</ul>
+
+<hr>
+
+<!-- ==================== AUDIO ==================== -->
+<h2>6. Audio: Da Inteligencia Artificial ao Alto-falante</h2>
+
+<h3>6.1 Geracao das Vozes (Offline, no Computador)</h3>
+
+<p>As vozes nao sao geradas no ESP32 — isso exigiria muito mais processamento e internet. Em vez disso, <strong>todos os audios sao pre-gerados</strong> usando a API de Text-to-Speech do Google Cloud e gravados no SPIFFS como arquivos WAV.</p>
+
+<table>
+  <tr><th>Voz</th><th>Modelo Google</th><th>Pitch</th><th>Velocidade</th></tr>
+  <tr><td><strong>Homem</strong> (adulto)</td><td>pt-BR-Neural2-B</td><td>0.0 (natural)</td><td>0.9x</td></tr>
+  <tr><td><strong>Mulher</strong> (adulta)</td><td>pt-BR-Wavenet-A</td><td>0.0 (natural)</td><td>0.9x</td></tr>
+  <tr><td><strong>Menino</strong> (infantil)</td><td>pt-BR-Wavenet-B</td><td>+6.0 semitons</td><td>0.9x</td></tr>
+  <tr><td><strong>Menina</strong> (infantil)</td><td>pt-BR-Neural2-C</td><td>+6.0 semitons</td><td>0.9x</td></tr>
+</table>
+
+<p><strong>Formato do audio:</strong></p>
+<ul>
+  <li><strong>Codec:</strong> LINEAR16 (PCM sem compressao)</li>
+  <li><strong>Taxa de amostragem:</strong> 48.000 Hz</li>
+  <li><strong>Bits por amostra:</strong> 16 bits signed</li>
+  <li><strong>Canais:</strong> Mono (1 canal)</li>
+  <li><strong>Pre-silencio:</strong> 200 ms adicionados antes da fala</li>
+  <li><strong>Cabecalho WAV:</strong> 44 bytes (pulado pelo AudioPlayer)</li>
+</ul>
+
+<h3>6.2 Idiomas Disponiveis</h3>
+
+<table>
+  <tr><th>Idioma</th><th>Codigo</th><th>Vocabulario</th><th>Status</th></tr>
+  <tr><td>Portugues (Brasil)</td><td>pt-BR</td><td>128 arquivos (108 objetos + 20 contextos)</td><td>Completo</td></tr>
+  <tr><td>Ingles</td><td>en</td><td>43 palavras</td><td>Funcional</td></tr>
+  <tr><td>Espanhol</td><td>es</td><td>43 palavras</td><td>Funcional</td></tr>
+  <tr><td>Frances</td><td>fr</td><td>43 palavras</td><td>Funcional</td></tr>
+  <tr><td>Mandarim</td><td>zh</td><td>43 palavras</td><td>Completo</td></tr>
+  <tr><td>Arabe</td><td>ar</td><td>43 palavras</td><td>Funcional</td></tr>
+</table>
+
+<h3>6.3 Pipeline de Reproducao</h3>
+
+<div class="diagram-box">
+Gesto reconhecido ("agua", score 78%)
+              |
+     AudioPlayer::playFile()
+              |
+   Le WAV do SPIFFS (/a/h/agua.wav)
+              |
+   Pula cabecalho (44 bytes)
+              |
+   ┌─────────┴─────────┐
+   |                    |
+M5.Speaker           BTAudio
+(I2S interno)        (A2DP externo)
+   |                    |
+MAX98357A         Caixa Bluetooth
+amplificador           |
+   |              Buffer PSRAM
+Speaker 1W        Callback PCM
+(HAT-SPK2)        (48 kHz)
+</div>
+
+<p><strong>Configuracao I2S:</strong></p>
+<ul>
+  <li><strong>Pinos:</strong> BCLK=GPIO26, LRCK=GPIO0, DATA=GPIO25</li>
+  <li><strong>Buffer:</strong> 8 frames x 256 amostras</li>
+  <li><strong>Volume:</strong> 217/255 (reduzido de 255 para evitar saturacao do MAX98357A)</li>
+</ul>
+
+<h3>6.4 Sequencia de Frase (Contexto + Objeto)</h3>
+
+<div class="code-block">1. Mao esquerda faz gesto → reconhecido como contexto CX01 "Eu quero"
+2. AudioPlayer toca ctx_01_i_want.wav → "Eu quero..."
+3. Estado muda para CONTEXT_WAIT (timeout 8 segundos)
+4. Mao direita faz gesto → reconhecido como G01 "agua"
+5. Pausa de 200 ms (SEQUENCE_GAP_MS)
+6. AudioPlayer toca agua.wav → "...agua"
+7. Resultado: "Eu quero agua" (frase completa em ~2 segundos)</div>
+
+<h3>6.5 Beeps e Feedback Sonoro</h3>
+
+<table>
+  <tr><th>Som</th><th>Frequencia</th><th>Duracao</th><th>Significado</th></tr>
+  <tr><td><strong>Confirmacao</strong></td><td>1000 Hz</td><td>100 ms</td><td>Gesto reconhecido com sucesso</td></tr>
+  <tr><td><strong>Erro</strong></td><td>500 Hz (x2)</td><td>100+100 ms</td><td>Gesto nao reconhecido</td></tr>
+  <tr><td><strong>Emergencia</strong></td><td>800 Hz</td><td>500 ms</td><td>Modo emergencia ativado</td></tr>
+  <tr><td><strong>SOS</strong></td><td>2000 Hz (x3)</td><td>500+300+500+300+500 ms</td><td>Alerta repetitivo, volume maximo</td></tr>
+</table>
+
+<hr>
+
+<!-- ==================== WEB APP ==================== -->
+<h2>7. Aplicativo Web (PWA)</h2>
+
+<h3>7.1 Tecnologias</h3>
+
+<p>O aplicativo de configuracao e uma <strong>Progressive Web App</strong> — roda no navegador sem instalar nada. Construido com HTML5, CSS3 e JavaScript puro (sem React, sem Vue, sem frameworks).</p>
+
+<table>
+  <tr><th>Aspecto</th><th>Tecnologia</th><th>Detalhe</th></tr>
+  <tr><td><strong>Frontend</strong></td><td>HTML5 + CSS3 + ES6+</td><td>~190 KB, arquivo unico (gestuum-app.html)</td></tr>
+  <tr><td><strong>Comunicacao USB</strong></td><td>Web Serial API</td><td>Chrome/Edge, 115200 baud, JSON por linha</td></tr>
+  <tr><td><strong>Comunicacao BLE</strong></td><td>Web Bluetooth API</td><td>GATT, chunks de 20 bytes, MTU ate 517</td></tr>
+  <tr><td><strong>Instalacao firmware</strong></td><td>esp-web-tools</td><td>Flash direto do navegador via USB</td></tr>
+  <tr><td><strong>Design</strong></td><td>CSS Grid + Flexbox</td><td>Paleta terapeutica (verde menta + azul pastel)</td></tr>
+  <tr><td><strong>Deploy</strong></td><td>Cloudflare Pages</td><td>CDN global, HTTPS, cache 24h</td></tr>
+</table>
+
+<h3>7.2 O que o Usuario Pode Fazer</h3>
+
+<ul>
+  <li><strong>Instalar firmware</strong> — conectar por USB, clicar "Instalar", pronto (uma vez)</li>
+  <li><strong>Treinar gestos</strong> — ensinar novos movimentos (3 repeticoes por gesto)</li>
+  <li><strong>Trocar voz</strong> — homem, mulher, menino ou menina</li>
+  <li><strong>Trocar idioma</strong> — portugues, ingles, espanhol, frances, mandarim, arabe</li>
+  <li><strong>Ajustar sensibilidade</strong> — limitado (gestos menores), padrao, avancado</li>
+  <li><strong>Exportar/importar gestos</strong> — backup dos gestos treinados</li>
+  <li><strong>Upload de audio</strong> — enviar novos arquivos WAV via BLE (base64)</li>
+</ul>
+
+<h3>7.3 APIs Web Utilizadas</h3>
+
+<div class="comparison-box">
+<strong>Web Serial API</strong> (navigator.serial)
+<ul>
+  <li>Permite o navegador acessar a porta USB diretamente — sem driver, sem terminal</li>
+  <li>Disponivel apenas no Chrome e Edge (nao funciona no Firefox ou Safari)</li>
+  <li>Usado para: instalacao de firmware, configuracao rapida, debug</li>
+</ul>
+
+<strong>Web Bluetooth API</strong> (navigator.bluetooth)
+<ul>
+  <li>Permite o navegador conectar via Bluetooth Low Energy</li>
+  <li>Requer gesto do usuario (clique) para iniciar pareamento</li>
+  <li>Usado para: configuracao sem fio, treinamento de gestos, troca de voz</li>
+</ul>
+
+<p>Ambas as APIs sao <strong>modernas e experimentais</strong> — funcionam nativamente no Chrome sem extensoes. O GESTUUM usa as duas em paralelo: USB para setup inicial, BLE para uso diario.</p>
+</div>
+
+<hr>
+
+<!-- ==================== CONSTANTES ==================== -->
+<h2>8. Constantes e Parametros do Sistema</h2>
+
+<p>Todos os valores criticos estao centralizados em <code>shared/src/constants.h</code>:</p>
+
+<table>
+  <tr><th>Constante</th><th>Valor</th><th>Unidade</th><th>Significado</th></tr>
+  <tr><td>GRID_SIZE</td><td>11</td><td>celulas</td><td>Grid de discretizacao 11x11x11 = 1.331 celulas</td></tr>
+  <tr><td>ACCEL_RANGE</td><td>2.0</td><td>g</td><td>Faixa do acelerometro (-2g a +2g)</td></tr>
+  <tr><td>GYRO_RANGE</td><td>200.0</td><td>deg/s</td><td>Faixa do giroscopio</td></tr>
+  <tr><td>IMU_SAMPLE_RATE_HZ</td><td>50</td><td>Hz</td><td>Leituras por segundo (periodo = 20 ms)</td></tr>
+  <tr><td>EMA_ALPHA</td><td>0.3</td><td>—</td><td>Coeficiente do filtro exponential moving average</td></tr>
+  <tr><td>AUDIO_SAMPLE_RATE</td><td>48000</td><td>Hz</td><td>Taxa de amostragem dos WAVs</td></tr>
+  <tr><td>ESPNOW_CHANNEL</td><td>13</td><td>—</td><td>Canal WiFi (2.472 GHz)</td></tr>
+  <tr><td>DTW_THRESHOLD_DEFAULT</td><td>3.5</td><td>—</td><td>Limiar de aceitacao DTW (normal)</td></tr>
+  <tr><td>DTW_THRESHOLD_EMERGENCY</td><td>4.5</td><td>—</td><td>Limiar DTW (emergencia — mais permissivo)</td></tr>
+  <tr><td>DTW_MAX_TRAJECTORY_LEN</td><td>150</td><td>pontos</td><td>Tamanho maximo da trajetoria (FIFO)</td></tr>
+  <tr><td>ORBITAL_RAW_BUFFER_SIZE</td><td>250</td><td>amostras</td><td>Buffer bruto para features (5s a 50Hz)</td></tr>
+  <tr><td>ORBITAL_ONSET_THRESHOLD</td><td>0.3</td><td>g</td><td>Limiar de inicio do gesto</td></tr>
+  <tr><td>ORBITAL_OFFSET_THRESHOLD</td><td>0.15</td><td>g</td><td>Limiar de fim do gesto</td></tr>
+  <tr><td>ORBITAL_MATCH_THRESHOLD</td><td>0.55</td><td>[0,1]</td><td>Similaridade minima para aceitar</td></tr>
+  <tr><td>MIN_GESTURE_MOVEMENT</td><td>3.0</td><td>euclidiana</td><td>Distancia minima para considerar como gesto</td></tr>
+  <tr><td>CONTEXT_TIMEOUT_MS</td><td>8000</td><td>ms</td><td>Tempo para objeto apos contexto</td></tr>
+  <tr><td>GESTURE_TIMEOUT_MS</td><td>3000</td><td>ms</td><td>Tempo maximo de gravacao</td></tr>
+</table>
+
+<h3>8.1 Niveis de Sensibilidade</h3>
+
+<p>O sistema se adapta ao usuario com tres niveis de sensibilidade:</p>
+
+<table>
+  <tr><th>Parametro</th><th>Limitado</th><th>Padrao</th><th>Avancado</th></tr>
+  <tr><td><strong>Gravacao minima</strong></td><td>1000 ms</td><td>2000 ms</td><td>2500 ms</td></tr>
+  <tr><td><strong>Timeout</strong></td><td>4000 ms</td><td>5000 ms</td><td>7000 ms</td></tr>
+  <tr><td><strong>Multiplicador DTW</strong></td><td>1.4x (mais tolerante)</td><td>1.0x</td><td>0.7x (mais exigente)</td></tr>
+  <tr><td><strong>Threshold do tap</strong></td><td>1.8g (leve)</td><td>2.2g</td><td>3.0g (forte)</td></tr>
+  <tr><td><strong>Trajetoria minima</strong></td><td>2 pontos</td><td>3 pontos</td><td>5 pontos</td></tr>
+  <tr><td><strong>Ideal para</strong></td><td>Paralisia cerebral, mobilidade reduzida</td><td>Uso geral</td><td>Gestos precisos, treinamento</td></tr>
+</table>
+
+<div class="callout">
+  O nivel "Limitado" aceita gestos menores e menos precisos — pensado para usuarios com mobilidade reduzida. O dispositivo se adapta a pessoa, nao o contrario.
+</div>
+
+<hr>
+
+<!-- ==================== BANCO GESTOS ==================== -->
+<h2>9. Banco de Gestos</h2>
+
+<h3>9.1 Estrutura do Banco</h3>
+
+<p>Cada gesto e armazenado como um objeto JSON com trajetorias treinadas e assinaturas orbitais:</p>
+
+<div class="code-dark">{
+  "id": "G01",
+  "name": "agua",
+  "audio_file": "agua.wav",
+  "threshold": 3.5,
+  "trained": true,
+  "trajectory_a": [[5,5,5], [5,6,5], [5,7,6], ...],
+  "trajectory_b": [[5,5,5], [6,5,5], [7,5,5], ...],
+  "trajectory_a_gyro": [...],
+  "trajectory_b_gyro": [...],
+  "duration_ms": 1200,
+  "sig_a": {
+    "amp": 0.5, "peak": 1.2, "lin": 0.9,
+    "dur": 1200, "sm": 0.6, "rot": 0.7,
+    "sym": -0.2, "n": [0.1, 0.2, 0.97]
+  }
+}</div>
+
+<h3>9.2 Contextos (8 prefixos de frase)</h3>
+
+<table>
+  <tr><th>#</th><th>Contexto</th><th>Audio</th><th>Exemplo de frase</th></tr>
+  <tr><td>CX01</td><td>"Eu quero"</td><td>ctx_01_i_want.wav</td><td>"Eu quero agua"</td></tr>
+  <tr><td>CX02</td><td>"Eu nao quero"</td><td>ctx_02_i_dont_want.wav</td><td>"Eu nao quero comida"</td></tr>
+  <tr><td>CX03</td><td>"Eu preciso"</td><td>ctx_03_i_need.wav</td><td>"Eu preciso de banheiro"</td></tr>
+  <tr><td>CX04</td><td>"Eu sinto"</td><td>ctx_04_i_feel.wav</td><td>"Eu sinto dor"</td></tr>
+  <tr><td>CX05</td><td>"Onde esta"</td><td>ctx_05_where_is.wav</td><td>"Onde esta ajuda"</td></tr>
+  <tr><td>CX06</td><td>"Chame"</td><td>ctx_06_call.wav</td><td>"Chame medico"</td></tr>
+  <tr><td>CX07</td><td>"Eu estou"</td><td>ctx_07_i_am.wav</td><td>"Eu estou com fome"</td></tr>
+  <tr><td>CX08</td><td>"Eu nao estou"</td><td>ctx_08_i_am_not.wav</td><td>"Eu nao estou bem"</td></tr>
+</table>
+
+<p><strong>Combinacoes possiveis:</strong> 8 contextos x 25+ objetos = <strong>200+ frases diferentes</strong> com apenas 33 gestos treinados.</p>
+
+<hr>
+
+<!-- ==================== TREINAMENTO ==================== -->
+<h2>10. Treinamento de Gestos</h2>
+
+<p>O usuario treina novos gestos pelo web app. O processo exige <strong>3 repeticoes</strong> do mesmo movimento:</p>
+
+<div class="code-block">1. App envia comando: {"cmd": "train_start", "gesture_id": "G01"}
+2. Dispositivo entra em STATE_TRAINING
+3. Usuario faz o gesto 3 vezes (com beep de confirmacao entre cada)
+4. Para cada amostra:
+   - Captura trajetoria (Matrix3D) + dados brutos (Orbital)
+   - Armazena temporariamente
+5. Apos 3 amostras:
+   - Seleciona amostra mediana como referencia
+   - Calcula threshold = media(distancias DTW entre amostras) x 1.5
+   - Extrai assinatura orbital (8 features)
+   - Salva tudo no JSON do SPIFFS
+6. Gesto marcado como "trained: true" — pronto para uso</div>
+
+<p><strong>Por que 3 repeticoes?</strong> Uma repeticao nao captura a variacao natural do movimento. Tres repeticoes permitem calcular um threshold realista — se as 3 amostras sao muito diferentes entre si, o threshold sobe (mais tolerante). Se sao quase identicas, o threshold desce (mais exigente).</p>
+
+<hr>
+
+<!-- ==================== FERRAMENTAS ==================== -->
+<h2>11. Ferramentas de Desenvolvimento</h2>
+
+<table>
+  <tr><th>Ferramenta</th><th>Linguagem</th><th>Funcao</th></tr>
+  <tr><td><strong>generate_google_tts.py</strong></td><td>Python</td><td>Gera 128 WAVs por voz via Google Cloud TTS API</td></tr>
+  <tr><td><strong>generate_language_packs.py</strong></td><td>Python</td><td>Gera pacotes de idiomas (43 palavras x 5 linguas)</td></tr>
+  <tr><td><strong>generate_contexts.py</strong></td><td>Python</td><td>Gera audios dos 20 contextos por voz</td></tr>
+  <tr><td><strong>plot_gesture.py</strong></td><td>Python</td><td>Visualizacao 2D+3D da trajetoria (matplotlib)</td></tr>
+  <tr><td><strong>plot_gesture_3d.py</strong></td><td>Python</td><td>Visualizacao 3D interativa (Plotly, HTML)</td></tr>
+  <tr><td><strong>build_release.py</strong></td><td>Python</td><td>Compila firmware dos dispositivos + SPIFFS</td></tr>
+  <tr><td><strong>prepare_upload.py</strong></td><td>Python</td><td>Prepara upload de voz para o dispositivo</td></tr>
+  <tr><td><strong>backup_spiffs.py</strong></td><td>Python</td><td>Backup/restore do sistema de arquivos</td></tr>
+  <tr><td><strong>trim_silence.py</strong></td><td>Python</td><td>Remove silencio extra dos WAVs gerados</td></tr>
+  <tr><td><strong>test_google_tts.py</strong></td><td>Python</td><td>Testa vozes antes de gerar em massa</td></tr>
+</table>
+
+<hr>
+
+<!-- ==================== SEGURANCA ==================== -->
+<h2>12. Seguranca e Confiabilidade</h2>
+
+<div class="no-break">
+<h3>12.1 Protecoes no Firmware</h3>
+
+<table>
+  <tr><th>Risco</th><th>Protecao Implementada</th></tr>
+  <tr><td><strong>Buffer overflow</strong></td><td>Clamp de int16 em leituras IMU, buffers com tamanho fixo</td></tr>
+  <tr><td><strong>Race condition</strong></td><td>Double-buffering com spinlock na recepcao ESP-NOW</td></tr>
+  <tr><td><strong>Crash em ISR</strong></td><td>Callback seta flag, processamento no loop principal</td></tr>
+  <tr><td><strong>Use-after-free</strong></td><td>Mutex no buffer PCM do A2DP</td></tr>
+  <tr><td><strong>Perda de pacotes</strong></td><td>Numero sequencial no IMUPacket para deteccao</td></tr>
+  <tr><td><strong>Saturacao de audio</strong></td><td>Volume limitado a 217/255 (previne distorcao no MAX98357A)</td></tr>
+  <tr><td><strong>Vibracao pos-tap</strong></td><td>Cooldown de 300 ms antes de iniciar gravacao</td></tr>
+  <tr><td><strong>Desconexao</strong></td><td>Heartbeat + timeout + reconexao automatica</td></tr>
+</table>
+</div>
+
+<div class="no-break">
+<h3>12.2 Filosofia de Confiabilidade</h3>
+
+<p>Num dispositivo assistivo, um <strong>falso positivo</strong> (falar a palavra errada) e pior que um <strong>falso negativo</strong> (nao reconhecer). Por isso:</p>
+
+<ul>
+  <li><strong>Ratio test de Lowe:</strong> Se dois gestos tem scores proximos (ratio > 0.95), rejeitar como ambiguo</li>
+  <li><strong>Threshold por gesto:</strong> Cada gesto tem seu proprio limiar, calculado no treinamento</li>
+  <li><strong>Score combinado:</strong> Exige concordancia de dois metodos (DTW 60% + Orbital 40%)</li>
+  <li><strong>Modo emergencia:</strong> Threshold mais permissivo (4.5 vs 3.5) — em emergencia, e melhor falar algo do que nada</li>
+</ul>
+
+<p class="highlight">Zero falsos positivos &gt; capturar todo gesto. Confiabilidade e dignidade.</p>
+</div>
+
+<hr>
+
+<!-- ==================== NUMEROS ==================== -->
+<h2>13. O Sistema em Numeros</h2>
+
+<table>
+  <tr><th>Metrica</th><th>Valor</th></tr>
+  <tr><td><strong>Linhas de codigo (firmware)</strong></td><td>~12.800 LOC (C++)</td></tr>
+  <tr><td><strong>Linhas de codigo (web app)</strong></td><td>~4.000 LOC (JS/HTML/CSS)</td></tr>
+  <tr><td><strong>Linhas de codigo (ferramentas)</strong></td><td>~2.000 LOC (Python)</td></tr>
+  <tr><td><strong>Microcontroladores</strong></td><td>2 (2x ESP32-PICO-V3-02)</td></tr>
+  <tr><td><strong>Protocolos de comunicacao</strong></td><td>4 (ESP-NOW, BLE, A2DP, USB Serial)</td></tr>
+  <tr><td><strong>Tipos de pacote ESP-NOW</strong></td><td>5 (IMU, Category, Emergency, Heartbeat, SetChannel)</td></tr>
+  <tr><td><strong>Features orbitais</strong></td><td>8 (amplitude, pico, linearidade, plano, duracao, suavidade, rotacao, simetria)</td></tr>
+  <tr><td><strong>Celulas na grid 3D</strong></td><td>1.331 (11 x 11 x 11)</td></tr>
+  <tr><td><strong>Leituras IMU por segundo</strong></td><td>50 Hz (6 eixos = 300 valores/s)</td></tr>
+  <tr><td><strong>Taxa de audio</strong></td><td>48.000 amostras/segundo</td></tr>
+  <tr><td><strong>Idiomas</strong></td><td>6</td></tr>
+  <tr><td><strong>Vozes por idioma</strong></td><td>4 (homem, mulher, menino, menina)</td></tr>
+  <tr><td><strong>Frases possiveis</strong></td><td>200+ (8 contextos x 25+ objetos)</td></tr>
+  <tr><td><strong>Tempo de reconhecimento</strong></td><td>~0.25 ms (DTW, 50 templates)</td></tr>
+  <tr><td><strong>Latencia total (gesto → voz)</strong></td><td>&lt; 500 ms</td></tr>
+  <tr><td><strong>Custo do hardware</strong></td><td>~R$ 600</td></tr>
+  <tr><td><strong>Peso por sensor</strong></td><td>~26g (M5StickC Plus2)</td></tr>
+</table>
+
+<hr>
+
+<!-- ==================== RESUMO ==================== -->
+<h2>14. Resumo para Apresentacao</h2>
+
+<p>O GESTUUM e um sistema de <strong>2 microcontroladores ESP32</strong> que se comunicam por <strong>ESP-NOW</strong> (latencia &lt; 3 ms) para transformar gestos de mao em fala sintetizada. O reconhecimento usa <strong>matematica aplicada</strong> (grid 3D, PCA, DTW, correlacao) rodando localmente no chip a 240 MHz — sem internet, sem nuvem, sem dependencias.</p>
+
+<p>O audio e pre-gerado por <strong>inteligencia artificial</strong> (Google Neural TTS) em 6 idiomas e 4 vozes, armazenado na memoria flash do dispositivo. A configuracao e feita por um <strong>aplicativo web</strong> que acessa o hardware diretamente pelo navegador (Web Serial + Web Bluetooth) — sem instalar nada.</p>
+
+<p>O projeto usa <strong>4 protocolos de comunicacao</strong> (ESP-NOW, BLE GATT, Bluetooth A2DP, USB Serial), <strong>12 modulos de software</strong> independentes, e <strong>~18.800 linhas de codigo</strong> — tudo open source.</p>
+
+<p>A tecnologia e sofisticada, mas o objetivo e simples:</p>
+
+<p class="highlight">Dar voz a quem nao tem — com hardware de ~R$ 600, codigo aberto,<br>e tecnologia que cabe no pulso.</p>
+
+<!-- ==================== RODAPE ==================== -->
+<div class="footer">
+  <strong>Projeto GESTUUM</strong> — Science Fair COREE 2026<br>
+  Codigo aberto: github.com/alexandrejalkh/gestuum<br>
+  2 MCUs | 4 protocolos | 6 idiomas | ~18.800 LOC | Open Source
+</div>
+
+<div class="sources">
+  <strong>Fontes tecnicas:</strong>
+  Espressif ESP-NOW: docs.espressif.com/projects/esp-idf &bull;
+  M5Stack M5StickC Plus2: docs.m5stack.com &bull;
+  InvenSense MPU6886: datasheet TDK/InvenSense &bull;
+  Maxim MAX98357A: datasheet Analog Devices &bull;
+  Google Cloud Text-to-Speech: cloud.google.com/text-to-speech &bull;
+  Web Serial API: developer.mozilla.org/Web/API/Serial &bull;
+  Web Bluetooth API: developer.mozilla.org/Web/API/Bluetooth &bull;
+  Bluetooth A2DP: bluetooth.com/specifications &bull;
+  PlatformIO: platformio.org (build system) &bull;
+  ArduinoJson: arduinojson.org
+</div>
+
+</body>
+</html>

@@ -1,0 +1,115 @@
+/* GESTUUM — PWA layout shell
+   Padrao de instalacao/configuracao via PWA. Diferente do site institucional
+   (nav + footer): aqui a aplicacao tem header proprio, focada em uso.
+   Carregar APOS variables.css. */
+
+/* ===== Reset minimo ===== */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ===== Body marker ===== */
+/* Body com class="pwa" reserva espaco pro header fixed (56px). */
+body.pwa {
+  padding-top: 56px;
+}
+
+/* ===== PWA Header ===== */
+.pwa-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 200;
+  height: 56px;
+  background: var(--text);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  gap: 12px;
+  box-shadow: 0 2px 8px rgba(45,55,72,.15);
+}
+
+.pwa-header-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: #fff;
+  flex-shrink: 0;
+  transition: opacity 0.2s ease;
+}
+
+.pwa-header-brand:hover {
+  opacity: 0.85;
+}
+
+.pwa-header-brand img {
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  display: block;
+}
+
+.pwa-header-name {
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+/* Slot onde cada PWA injeta seus widgets (bateria, BLE, step atual...) */
+.pwa-header-slot {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* Link "Site" (saida pra index.html) */
+.pwa-header-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+  color: rgba(255,255,255,0.7);
+  font-size: 0.82rem;
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: 9999px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.pwa-header-back:hover {
+  color: #fff;
+  background: rgba(255,255,255,0.14);
+  border-color: rgba(255,255,255,0.24);
+}
+
+.pwa-header-back svg {
+  flex-shrink: 0;
+}
+
+/* Em telas estreitas, esconde o texto "Site" — fica so a seta */
+@media (max-width: 480px) {
+  .pwa-header-back span {
+    display: none;
+  }
+
+  .pwa-header-back {
+    padding: 6px 10px;
+  }
+
+  .pwa-header-name {
+    font-size: 0.95rem;
+  }
+}

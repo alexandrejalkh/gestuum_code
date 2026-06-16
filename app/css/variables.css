@@ -1,0 +1,60 @@
+/* GESTUUM — Design tokens
+   Paleta pastel terapeutica + spacing scale + radii + transitions.
+   Usada em todas as paginas do site (index, devices, contato).
+   Wizards (install, gestuum-app) ainda mantem suas vars proprias e serao
+   migrados na sprint do PWA. */
+
+:root {
+  /* Primary - Mint Green (calma, cuidado) */
+  --green: #A8D5BA;
+  --green-dark: #7BC09A;
+  --green-light: #D4EDE0;
+  --green-pale: #F0F7F4;
+
+  /* Secondary - Powder Blue (confianca, serenidade) */
+  --blue: #A7C7E7;
+  --blue-dark: #7AADE0;
+  --blue-light: #D3E4F3;
+  --blue-pale: #F0F5FB;
+
+  /* Logo accents */
+  --logo-teal: #009688;
+  --logo-purple: #7C4DFF;
+
+  /* Neutrals (warm, not cold) */
+  --text: #2D3748;
+  --text-secondary: #718096;
+  --text-light: #A0AEC0;
+  --bg: #F9FAFB;
+  --bg-alt: #F0F7F4;
+  --white: #FFFFFF;
+  --border: #E2E8F0;
+  --border-light: #EDF2F7;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 3px rgba(45,55,72,0.04);
+  --shadow-md: 0 4px 12px rgba(45,55,72,0.06);
+  --shadow-lg: 0 8px 24px rgba(45,55,72,0.08);
+
+  /* Spacing scale */
+  --space-1: 8px;
+  --space-2: 16px;
+  --space-3: 24px;
+  --space-4: 32px;
+  --space-5: 40px;
+  --space-6: 48px;
+  --space-8: 64px;
+  --space-10: 80px;
+  --space-12: 96px;
+
+  /* Radius */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-full: 9999px;
+
+  /* Transitions */
+  --transition-fast: 0.15s ease;
+  --transition-base: 0.3s ease;
+}

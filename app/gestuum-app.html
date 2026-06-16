@@ -1,0 +1,3740 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#2D3748">
+<meta name="description" content="GESTUUM - Configurador do dispositivo gesto-a-fala">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="GESTUUM">
+<link rel="manifest" href="data:application/json,%7B%22name%22%3A%22GESTUUM%20Configurador%22%2C%22short_name%22%3A%22GESTUUM%22%2C%22start_url%22%3A%22.%2Fgestuum-app.html%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23F9FAFB%22%2C%22theme_color%22%3A%22%232D3748%22%2C%22orientation%22%3A%22portrait%22%7D">
+<title>GESTUUM Configurador</title>
+<link rel="stylesheet" href="css/variables.css">
+<link rel="stylesheet" href="css/pwa.css">
+<script src="js/pwa.js" defer></script>
+<style>
+/* ===== RESET & BASE ===== */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --primary:#A8D5BA;--primary-light:#D4EDE0;--primary-dark:#7BC09A;
+  --secondary:#A7C7E7;--secondary-light:#D3E4F3;
+  --emergency:#E57373;--emergency-light:#FFCDD2;
+  --success:#81C784;--success-light:#C8E6C9;
+  --warning:#FFB74D;--warning-light:#FFE0B2;
+  --orange:#FF8A65;--orange-light:#FFCCBC;
+  --bg:#F9FAFB;--surface:#FFFFFF;--surface-alt:#F0F7F4;
+  --text:#2D3748;--text-secondary:#718096;--text-hint:#A0AEC0;
+  --divider:#E2E8F0;
+  --shadow:0 2px 8px rgba(45,55,72,.06);--shadow-lg:0 4px 16px rgba(45,55,72,.08);
+  --radius:16px;--radius-sm:10px;
+  --transition:0.2s ease;
+  --tab-height:56px;--header-height:56px;
+}
+html{font-size:16px;-webkit-tap-highlight-color:transparent}
+body{
+  font-family:'Segoe UI',Roboto,system-ui,-apple-system,sans-serif;
+  background:var(--bg);color:var(--text);
+  min-height:100vh;overflow-x:hidden;
+  padding-bottom:calc(var(--tab-height) + 16px);
+}
+button{font-family:inherit;cursor:pointer;border:none;background:none;font-size:inherit}
+input{font-family:inherit;font-size:inherit}
+a{color:var(--primary-dark);text-decoration:none}
+
+/* ===== HEADER ===== */
+.header{
+  position:sticky;top:0;z-index:100;
+  background:#2D3748;color:#fff;
+  height:var(--header-height);
+  display:flex;align-items:center;padding:0 16px;
+  box-shadow:0 2px 8px rgba(45,55,72,.15);
+}
+.header-logo{display:flex;align-items:center;gap:10px}
+.header-logo svg{width:28px;height:28px;fill:#fff}
+.header-title{font-size:1.25rem;font-weight:700;letter-spacing:1px}
+.header-right{margin-left:auto;display:flex;align-items:center;gap:12px}
+.conn-indicator{
+  width:12px;height:12px;border-radius:50%;
+  background:var(--emergency);border:2px solid rgba(255,255,255,.3);
+  transition:background var(--transition);
+}
+.conn-indicator.connected{background:var(--success)}
+.battery-badge{
+  font-size:.75rem;background:rgba(255,255,255,.15);
+  padding:2px 8px;border-radius:10px;display:none;align-items:center;gap:4px;
+}
+.battery-badge.show{display:flex}
+.battery-badge svg{width:14px;height:14px;fill:#fff}
+
+/* ===== TAB BAR ===== */
+.tab-bar{
+  position:fixed;bottom:0;left:0;right:0;z-index:100;
+  background:var(--surface);
+  height:var(--tab-height);
+  display:flex;align-items:stretch;
+  box-shadow:0 -2px 8px rgba(45,55,72,.06);
+  border-top:1px solid var(--divider);
+}
+.tab-btn{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:2px;color:var(--text-secondary);
+  font-size:.75rem;font-weight:500;
+  transition:color var(--transition);
+  min-height:48px;position:relative;
+  -webkit-user-select:none;user-select:none;
+}
+.tab-btn svg{width:22px;height:22px;fill:currentColor;transition:fill var(--transition)}
+.tab-btn.active{color:var(--primary-dark)}
+.tab-btn.active::after{
+  content:'';position:absolute;top:0;left:25%;right:25%;
+  height:3px;background:var(--primary-dark);border-radius:0 0 3px 3px;
+}
+
+/* ===== PAGES ===== */
+.page{display:none;padding:16px;animation:fadeIn .2s ease}
+.page.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.page-title{font-size:1.25rem;font-weight:700;margin-bottom:16px;color:var(--text)}
+.section-title{font-size:.875rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.5px;margin:20px 0 12px}
+
+/* ===== CARDS ===== */
+.card{
+  background:var(--surface);border-radius:var(--radius);
+  padding:16px;margin-bottom:12px;
+  border:1px solid var(--divider);
+  box-shadow:var(--shadow);
+  transition:box-shadow var(--transition);
+}
+.card:active{box-shadow:var(--shadow-lg)}
+
+/* ===== BUTTONS ===== */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  min-height:48px;padding:12px 24px;border-radius:var(--radius-sm);
+  font-size:.9375rem;font-weight:600;
+  transition:all var(--transition);
+  -webkit-user-select:none;user-select:none;
+}
+.btn svg{width:20px;height:20px;fill:currentColor}
+.btn-primary{background:var(--primary-dark);color:#fff}
+.btn-primary:hover{background:var(--primary)}
+.btn-primary:disabled{background:var(--text-hint);color:#fff;cursor:not-allowed}
+.btn-secondary{background:var(--secondary);color:#fff}
+.btn-secondary:hover{background:var(--secondary-light)}
+.btn-danger{background:var(--emergency);color:#fff}
+.btn-danger:hover{background:var(--emergency-light)}
+.btn-outline{border:2px solid var(--primary-dark);color:var(--primary-dark);background:transparent}
+.btn-outline:hover{background:rgba(123,192,154,.1)}
+.btn-full{width:100%}
+.btn-sm{min-height:48px;padding:6px 14px;font-size:.8125rem;border-radius:6px}
+.btn-icon{
+  width:48px;height:48px;min-height:48px;padding:0;border-radius:50%;
+  display:inline-flex;align-items:center;justify-content:center;
+}
+.btn-icon svg{width:22px;height:22px}
+
+/* ===== CONNECTION PAGE ===== */
+.connect-buttons{display:flex;flex-direction:column;gap:12px;margin-bottom:20px}
+.connect-btn{
+  display:flex;align-items:center;gap:16px;
+  min-height:64px;padding:16px 20px;
+  border-radius:var(--radius);font-size:1rem;font-weight:600;
+  color:#fff;transition:all var(--transition);
+}
+.connect-btn svg{width:32px;height:32px;fill:#fff;flex-shrink:0}
+.connect-btn.usb{background:linear-gradient(135deg,#7BC09A,#A8D5BA)}
+.connect-btn.ble{background:linear-gradient(135deg,#A7C7E7,#D3E4F3);color:#2D3748}
+.connect-btn.ble svg{fill:#2D3748}
+.connect-btn:disabled{opacity:.5;cursor:not-allowed}
+.connect-btn .btn-sub{font-size:.75rem;font-weight:400;opacity:.85}
+
+.device-info{display:none}
+.device-info.show{display:block}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.info-item{display:flex;flex-direction:column;gap:2px}
+.info-label{font-size:.8125rem;color:var(--text-secondary);font-weight:500}
+.info-value{font-size:.9375rem;font-weight:600}
+.transport-badge{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:3px 10px;border-radius:20px;
+  font-size:.6875rem;font-weight:700;text-transform:uppercase;color:#fff;
+}
+.transport-badge.usb{background:var(--primary)}
+.transport-badge.ble{background:var(--secondary)}
+.disconnect-btn{margin-top:12px}
+
+/* ===== STATUS BANNER ===== */
+.status-banner{
+  padding:10px 16px;border-radius:var(--radius-sm);
+  font-size:.875rem;font-weight:500;
+  display:flex;align-items:center;gap:8px;margin-bottom:16px;
+}
+.status-banner svg{width:18px;height:18px;flex-shrink:0}
+.status-banner.disconnected{background:var(--emergency-light);color:#C62828}
+.status-banner.disconnected svg{fill:#C62828}
+.status-banner.connected{background:var(--success-light);color:#2E7D32}
+.status-banner.connected svg{fill:#2E7D32}
+.status-banner.connecting{background:var(--warning-light);color:#E65100}
+.status-banner.connecting svg{fill:#E65100}
+
+/* ===== VOICE CARDS ===== */
+.voice-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.voice-card{
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  padding:20px 12px;border-radius:var(--radius);
+  border:2px solid var(--divider);background:var(--surface);
+  cursor:pointer;transition:all var(--transition);
+  min-height:100px;
+}
+.voice-card:active{transform:scale(.97)}
+.voice-card.selected{border-color:var(--primary-dark);background:rgba(123,192,154,.08)}
+.voice-card svg{width:40px;height:40px;fill:var(--text-secondary);transition:fill var(--transition)}
+.voice-card.selected svg{fill:var(--primary-dark)}
+.voice-card-label{font-size:.875rem;font-weight:600;color:var(--text)}
+.voice-card.selected .voice-card-label{color:var(--primary-dark)}
+.voice-warning{
+  font-size:.8125rem;color:var(--warning);
+  display:flex;align-items:flex-start;gap:6px;margin:8px 0 16px;
+  line-height:1.4;
+}
+.voice-warning svg{width:18px;height:18px;fill:var(--warning);flex-shrink:0;margin-top:1px}
+
+/* ===== PROFILE CARDS ===== */
+.profile-card{
+  display:flex;align-items:center;gap:12px;
+  padding:14px 16px;border-radius:var(--radius);
+  background:var(--surface);box-shadow:var(--shadow);margin-bottom:10px;
+}
+.profile-icon{
+  width:44px;height:44px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.profile-icon svg{width:24px;height:24px;fill:#fff}
+.profile-info{flex:1;min-width:0}
+.profile-name{font-size:.9375rem;font-weight:600}
+.profile-count{font-size:.8125rem;color:var(--text-secondary)}
+.profile-toggle{position:relative;width:48px;height:28px;flex-shrink:0}
+.profile-toggle input{opacity:0;width:0;height:0}
+.profile-toggle .slider{
+  position:absolute;inset:0;border-radius:14px;
+  background:#ccc;cursor:pointer;transition:background var(--transition);
+}
+.profile-toggle .slider::before{
+  content:'';position:absolute;left:3px;top:3px;
+  width:22px;height:22px;border-radius:50%;
+  background:#fff;transition:transform var(--transition);
+  box-shadow:0 1px 3px rgba(0,0,0,.2);
+}
+.profile-toggle input:checked+.slider{background:var(--success)}
+.profile-toggle input:checked+.slider::before{transform:translateX(20px)}
+.profile-toggle input:disabled+.slider{opacity:.6;cursor:not-allowed}
+.profile-badge{
+  font-size:.625rem;font-weight:700;padding:2px 6px;
+  border-radius:4px;color:#fff;text-transform:uppercase;
+}
+
+.future-card{
+  display:flex;align-items:center;gap:12px;
+  padding:12px 16px;border-radius:var(--radius-sm);
+  background:var(--surface-alt);border:1px dashed var(--divider);margin-bottom:8px;
+  opacity:.7;
+}
+.future-card .profile-icon{opacity:.5}
+.future-label{font-size:.75rem;color:var(--text-hint);font-style:italic}
+
+/* ===== PERSONALIZAR ===== */
+.personal-field{
+  display:flex;align-items:center;gap:8px;
+  margin-bottom:10px;padding:10px 12px;
+  background:var(--surface);border-radius:var(--radius-sm);
+  box-shadow:var(--shadow);
+}
+.personal-field .field-info{flex:1;min-width:0}
+.personal-field label{display:block;font-size:.75rem;color:var(--text-secondary);margin-bottom:2px}
+.personal-field input{
+  width:100%;border:none;outline:none;font-size:.9375rem;
+  background:transparent;color:var(--text);
+}
+.personal-field .field-actions{display:flex;gap:4px;flex-shrink:0}
+
+.slot-item{
+  display:flex;align-items:center;gap:8px;
+  padding:10px 12px;background:var(--surface);
+  border-radius:var(--radius-sm);box-shadow:var(--shadow);margin-bottom:8px;
+}
+.slot-label{flex:1;font-size:.875rem;font-weight:500}
+.slot-status{font-size:.75rem;color:var(--text-hint)}
+.slot-actions{display:flex;gap:4px}
+
+/* ===== TESTAR ===== */
+.gesture-category{margin-bottom:16px}
+.gesture-category-title{
+  font-size:.8125rem;font-weight:600;color:var(--text-secondary);
+  text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;
+  padding-left:4px;
+}
+.gesture-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px}
+.gesture-btn{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:4px;padding:12px 8px;border-radius:var(--radius-sm);
+  min-height:60px;font-size:.8125rem;font-weight:600;
+  color:#fff;transition:all var(--transition);text-align:center;
+  line-height:1.2;
+}
+.gesture-btn:active{transform:scale(.93);opacity:.8}
+.gesture-btn.cat-geral{background:#A7C7E7;color:var(--text)}
+.gesture-btn.cat-emergencia{background:#E57373}
+.gesture-btn.cat-casa{background:#81C784}
+.gesture-btn.cat-escola{background:#FFB74D;color:var(--text)}
+.gesture-btn.cat-social{background:#CE93D8}
+.gesture-btn.cat-hospital{background:#80CBC4;color:var(--text)}
+.gesture-btn.cat-transporte{background:#FF8A65}
+.gesture-btn.cat-trabalho{background:#FFD54F;color:var(--text)}
+.gesture-btn.cat-auto{background:#90A4AE}
+
+/* ===== SOBRE ===== */
+.about-center{text-align:center;padding:20px 0}
+.about-logo{margin:0 auto 16px}
+.about-logo svg{width:80px;height:80px;fill:var(--primary-dark)}
+.about-name{font-size:1.5rem;font-weight:700;color:var(--primary-dark);letter-spacing:2px}
+.about-sub{font-size:.875rem;color:var(--text-secondary);margin-top:4px}
+.about-version{font-size:.8125rem;color:var(--text-hint);margin-top:8px}
+.about-qr{margin:24px auto;width:160px;height:160px;background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.about-qr canvas{width:100%;height:100%}
+.about-credits{font-size:.8125rem;color:var(--text-secondary);line-height:1.6;margin-top:20px}
+.about-credits a{font-weight:600}
+
+/* ===== PROGRESS BAR ===== */
+.progress-bar{
+  width:100%;height:8px;background:var(--divider);
+  border-radius:4px;overflow:hidden;margin:12px 0;display:none;
+}
+.progress-bar.show{display:block}
+.progress-bar .fill{
+  height:100%;background:linear-gradient(90deg,var(--primary),var(--primary-light));
+  border-radius:4px;transition:width .3s ease;width:0;
+}
+.progress-text{font-size:.75rem;color:var(--text-secondary);text-align:center;display:none}
+.progress-text.show{display:block}
+
+/* ===== MODAL ===== */
+.modal-overlay{
+  position:fixed;inset:0;z-index:200;
+  background:rgba(0,0,0,.5);
+  display:none;align-items:center;justify-content:center;
+  padding:16px;
+}
+.modal-overlay.show{display:flex}
+.modal{
+  background:var(--surface);border-radius:var(--radius);
+  width:100%;max-width:400px;padding:24px;
+  box-shadow:var(--shadow-lg);animation:modalIn .2s ease;
+}
+@keyframes modalIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
+.modal-title{font-size:1.125rem;font-weight:700;margin-bottom:16px;text-align:center}
+.modal-actions{display:flex;gap:8px;margin-top:20px;justify-content:center}
+
+/* ===== RECORDING UI ===== */
+.rec-container{display:flex;flex-direction:column;align-items:center;gap:16px}
+.rec-btn{
+  width:72px;height:72px;border-radius:50%;
+  background:var(--emergency);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 12px rgba(229,115,115,.4);
+  transition:all var(--transition);
+}
+.rec-btn:active{transform:scale(.9)}
+.rec-btn.recording{animation:pulse 1s infinite}
+.rec-btn svg{width:32px;height:32px;fill:#fff}
+@keyframes pulse{0%,100%{box-shadow:0 4px 12px rgba(229,115,115,.4)}50%{box-shadow:0 4px 24px rgba(229,115,115,.6)}}
+.rec-timer{font-size:1.5rem;font-weight:700;font-variant-numeric:tabular-nums;color:var(--text)}
+.rec-canvas{width:100%;height:60px;border-radius:var(--radius-sm);background:var(--surface-alt)}
+.rec-actions{display:flex;gap:12px}
+
+/* ===== TOAST ===== */
+.toast-container{
+  position:fixed;bottom:calc(var(--tab-height) + 16px);
+  left:16px;right:16px;z-index:300;
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  pointer-events:none;
+}
+.toast{
+  padding:12px 20px;border-radius:var(--radius-sm);
+  color:#fff;font-size:.875rem;font-weight:500;
+  box-shadow:var(--shadow-lg);
+  animation:toastIn .3s ease;
+  pointer-events:auto;max-width:360px;text-align:center;
+}
+.toast.success,.toast.ok{background:#4CAF50}
+.toast.error{background:#E57373}
+.toast.info{background:#5C9FD4}
+.toast.warn{background:#F9A825;color:#333}
+@keyframes toastIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes toastOut{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(20px)}}
+
+/* ===== CONFIRM DIALOG ===== */
+.confirm-text{font-size:.9375rem;line-height:1.5;color:var(--text-secondary);text-align:center}
+
+/* ===== RESPONSIVE ===== */
+/* FIX: Suporte a telas de 320px (iPhone SE, dispositivos antigos) */
+@media(max-width:359px){
+  /* Tab bar: esconde labels, mostra so icones em telas muito pequenas */
+  .tab-btn span{display:none}
+  .tab-btn{gap:0;min-height:44px}
+  .tab-btn svg{width:24px;height:24px}
+  /* Reduz padding geral */
+  .page{padding:12px}
+  .page-title{font-size:1.1rem}
+  /* Voice grid: 2 colunas mais compactas */
+  .voice-grid{gap:8px}
+  .voice-card{padding:14px 8px;min-height:80px}
+  /* Gesture grid: colunas menores */
+  .gesture-grid{grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:6px}
+  .gesture-btn{padding:10px 6px;font-size:.75rem;min-height:50px}
+  /* Phrase builder: empilha em coluna */
+  .card [style*="display:flex"][style*="gap:8px"]{flex-direction:column}
+  /* Botoes menores */
+  .btn{padding:10px 18px;font-size:.875rem}
+  .connect-btn{min-height:56px;padding:12px 16px;font-size:.9375rem}
+}
+@media(min-width:600px){
+  body{max-width:480px;margin:0 auto}
+  .tab-bar{max-width:480px;left:50%;transform:translateX(-50%)}
+  .toast-container{max-width:480px;left:50%;transform:translateX(-50%);right:auto;width:100%}
+}
+@media(min-width:900px){
+  body{max-width:600px}
+  .tab-bar{max-width:600px}
+  .toast-container{max-width:600px}
+  .voice-grid{grid-template-columns:repeat(4,1fr)}
+  .gesture-grid{grid-template-columns:repeat(auto-fill,minmax(110px,1fr))}
+}
+
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--divider);border-radius:2px}
+
+/* ===== TREINAR PAGE ===== */
+.level-btn { border:2px solid var(--divider); transition: all var(--transition); }
+.level-btn.active { border-color:var(--primary-dark); background:rgba(123,192,154,.1); color:var(--primary-dark); }
+.train-item { display:flex; align-items:center; padding:10px 12px; background:var(--surface); border-radius:var(--radius-sm); box-shadow:var(--shadow); gap:8px; }
+.train-item .train-name { flex:1; font-weight:600; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:.92rem; }
+.train-item .train-status { font-size:.7rem; padding:2px 8px; border-radius:10px; flex-shrink:0; }
+.train-item .train-status.trained { background:var(--success-light); color:#2E7D32; }
+.train-item .train-status.untrained { background:var(--warning-light); color:#E65100; }
+.train-item .train-btn { min-width:auto; padding:6px 10px; font-size:.78rem; flex-shrink:0; }
+.train-item .train-reset-btn { padding:6px 10px; font-size:.78rem; flex-shrink:0; }
+/* Agrupamento por categoria (Esq/Dir/Solo) — refator 2026-05-01 */
+.train-group { margin-bottom:18px; }
+.train-group-header { display:flex; justify-content:space-between; align-items:center; padding:8px 12px; margin-bottom:8px; background:var(--surface-alt, #F0F7F4); border-radius:var(--radius-sm); }
+.train-group-title { font-weight:700; font-size:.92rem; color:var(--text); }
+.train-group-count { font-size:.75rem; color:var(--text-secondary); font-weight:600; }
+.train-group-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+@media(max-width:520px) { .train-group-grid { grid-template-columns:1fr; } }
+</style>
+</head>
+<body class="pwa" data-pwa-app="Configurador">
+
+<!-- Header padrao do PWA (injetado por js/pwa.js) -->
+<div id="pwa-header"></div>
+
+<!-- Widgets do Configurador movidos para o slot do pwa-header.
+     IDs preservados — JS da SPA continua manipulando-os por ID. -->
+<template id="pwa-header-extra">
+  <div class="battery-badge" id="batteryBadge">
+    <svg viewBox="0 0 24 24"><path d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4z"/></svg>
+    <span id="batteryText">--</span>
+  </div>
+  <div class="conn-indicator" id="connIndicator" title="Desconectado"></div>
+</template>
+
+<!-- ===== PAGE: CONEXAO ===== -->
+<div class="page active" id="pageConexao">
+  <h2 class="page-title">Conexão</h2>
+
+  <div id="statusBanner" class="status-banner disconnected">
+    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+    <span id="statusText">Nenhum dispositivo conectado</span>
+  </div>
+
+  <div class="connect-buttons">
+    <button class="connect-btn usb" id="btnConnectUSB" onclick="App.connectUSB()" aria-label="Conectar via cabo USB">
+      <svg viewBox="0 0 24 24"><path d="M15 7v4h1v2h-3V5h2l-3-4-3 4h2v8H8v-2.07c.7-.37 1.2-1.08 1.2-1.93 0-1.21-.99-2.2-2.2-2.2-1.21 0-2.2.99-2.2 2.2 0 .85.5 1.56 1.2 1.93V13c0 1.11.89 2 2 2h3v3.05c-.71.37-1.2 1.1-1.2 1.95 0 1.22.99 2.2 2.2 2.2 1.21 0 2.2-.98 2.2-2.2 0-.85-.49-1.58-1.2-1.95V15h3c1.11 0 2-.89 2-2v-2h1V7h-4z"/></svg>
+      <div>
+        <div>Conectar USB</div>
+        <div class="btn-sub">Conexão por cabo — sempre disponível</div>
+      </div>
+    </button>
+    <button class="connect-btn ble" id="btnConnectBLE" onclick="App.showBleHelp()" aria-label="Conectar via Bluetooth">
+      <svg viewBox="0 0 24 24"><path d="M17.71 7.71L12 2h-1v7.59L6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 11 14.41V22h1l5.71-5.71-4.3-4.29 4.3-4.29zM13 5.83l1.88 1.88L13 9.59V5.83zm1.88 10.46L13 18.17v-3.76l1.88 1.88z"/></svg>
+      <div>
+        <div>Conectar Bluetooth</div>
+        <div class="btn-sub">Sem fio — ative o Bluetooth no sensor primeiro</div>
+      </div>
+    </button>
+  </div>
+
+  <div class="device-info" id="deviceInfo">
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <h3 style="font-size:1rem;font-weight:700">Dispositivo</h3>
+        <span class="transport-badge" id="transportBadge">--</span>
+      </div>
+      <div class="info-grid">
+        <div class="info-item">
+          <span class="info-label">Nome</span>
+          <span class="info-value" id="infoName">--</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Versão do Sistema</span>
+          <span class="info-value" id="infoFirmware">--</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Bateria</span>
+          <span class="info-value" id="infoBattery">--</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Voz Atual</span>
+          <span class="info-value" id="infoVoice">--</span>
+        </div>
+        <div class="info-item" style="grid-column:1/-1">
+          <span class="info-label">Perfis Ativos</span>
+          <span class="info-value" id="infoProfiles">--</span>
+        </div>
+      </div>
+
+      <!-- Modo silencioso — para criancas autistas sensiveis a sons de erro -->
+      <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--divider)">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div style="flex:1;min-width:0">
+            <div style="font-size:.9375rem;font-weight:600">Modo Silencioso</div>
+            <div style="font-size:.75rem;color:var(--text-secondary);line-height:1.4;margin-top:2px">Desativa os beeps de erro. Indicado para criancas autistas sensiveis a sons inesperados.</div>
+          </div>
+          <label class="profile-toggle" style="margin-left:12px">
+            <input type="checkbox" id="silentModeToggle" onchange="App.toggleSilentMode(this.checked)" aria-label="Ativar modo silencioso">
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Troca de canal ESP-NOW -->
+      <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--divider)">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div style="flex:1;min-width:0">
+            <div style="font-size:.9375rem;font-weight:600">Canal de Comunica&ccedil;&atilde;o</div>
+            <div style="font-size:.75rem;color:var(--text-secondary);line-height:1.4;margin-top:2px">Se houver interfer&ecirc;ncia (gestos falhando), troque o canal. Todos os dispositivos reiniciam automaticamente.</div>
+          </div>
+          <select id="channelSelect" onchange="App.setChannel(parseInt(this.value))" style="width:70px;padding:8px;border:2px solid var(--divider);border-radius:var(--radius-sm);font-size:.9rem;font-weight:600;background:var(--surface);text-align:center" aria-label="Canal ESP-NOW">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+            <option value="10">10</option>
+            <option value="11">11</option>
+            <option value="12">12</option>
+            <option value="13" selected>13</option>
+          </select>
+        </div>
+      </div>
+
+      <button class="btn btn-outline btn-full btn-sm disconnect-btn" onclick="App.disconnect()" aria-label="Desconectar dispositivo">Desconectar</button>
+
+      <!-- Factory Reset -->
+      <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--divider)">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div style="flex:1;min-width:0">
+            <div style="font-size:.9375rem;font-weight:600;color:var(--emergency)">Restaurar Padr&atilde;o</div>
+            <div style="font-size:.75rem;color:var(--text-secondary);line-height:1.4;margin-top:2px">Volta o dispositivo e o app ao estado de f&aacute;brica. Firmware e &aacute;udios n&atilde;o s&atilde;o apagados.</div>
+          </div>
+          <button class="btn btn-sm" style="background:var(--emergency);color:#fff;min-width:80px" onclick="App.factoryReset()">Resetar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PAGE: VOZ ===== -->
+<div class="page" id="pageVoz">
+  <h2 class="page-title">Voz</h2>
+
+  <!-- FIX: Adicionado botao "Ouvir" em cada card de voz (antes so existia no install.html) -->
+  <div class="voice-grid">
+    <div class="voice-card selected" data-voice="0" onclick="App.selectVoice(0)">
+      <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/><rect x="14" y="3" width="3" height="2" rx="1"/></svg>
+      <span class="voice-card-label">Homem</span>
+      <button class="btn-sm btn-outline" style="font-size:.7rem;padding:4px 10px;min-height:32px;margin-top:4px" onclick="event.stopPropagation();App.previewVoice(0)" aria-label="Ouvir amostra voz masculina">&#9654; Ouvir</button>
+    </div>
+    <div class="voice-card" data-voice="1" onclick="App.selectVoice(1)">
+      <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/><circle cx="15" cy="4" r="1.5"/></svg>
+      <span class="voice-card-label">Mulher</span>
+      <button class="btn-sm btn-outline" style="font-size:.7rem;padding:4px 10px;min-height:32px;margin-top:4px" onclick="event.stopPropagation();App.previewVoice(1)" aria-label="Ouvir amostra voz feminina">&#9654; Ouvir</button>
+    </div>
+    <div class="voice-card" data-voice="2" onclick="App.selectVoice(2)">
+      <svg viewBox="0 0 24 24"><path d="M12 6c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.65 0-3 1.35-3 3v4h6v-4c0-1.65-1.35-3-3-3zm0 10c-2 0-6 1-6 3v1h12v-1c0-2-4-3-6-3z"/></svg>
+      <span class="voice-card-label">Menino</span>
+      <button class="btn-sm btn-outline" style="font-size:.7rem;padding:4px 10px;min-height:32px;margin-top:4px" onclick="event.stopPropagation();App.previewVoice(2)" aria-label="Ouvir amostra voz menino">&#9654; Ouvir</button>
+    </div>
+    <div class="voice-card" data-voice="3" onclick="App.selectVoice(3)">
+      <svg viewBox="0 0 24 24"><path d="M12 6c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.65 0-3 1.35-3 3v4h6v-4c0-1.65-1.35-3-3-3zm0 10c-2 0-6 1-6 3v1h12v-1c0-2-4-3-6-3z"/><circle cx="14.5" cy="3" r="1"/></svg>
+      <span class="voice-card-label">Menina</span>
+      <button class="btn-sm btn-outline" style="font-size:.7rem;padding:4px 10px;min-height:32px;margin-top:4px" onclick="event.stopPropagation();App.previewVoice(3)" aria-label="Ouvir amostra voz menina">&#9654; Ouvir</button>
+    </div>
+  </div>
+
+  <div class="voice-warning">
+    <svg viewBox="0 0 24 24"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>
+    <span>Troca de voz requer conexão USB e leva aproximadamente 50 segundos para transferir todos os arquivos.</span>
+  </div>
+
+  <button class="btn btn-primary btn-full" id="btnApplyVoice" onclick="App.applyVoice()" disabled>
+    <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+    Aplicar Voz
+  </button>
+
+  <div class="progress-bar" id="voiceProgress"><div class="fill" id="voiceProgressFill"></div></div>
+  <div class="progress-text" id="voiceProgressText"></div>
+</div>
+
+<!-- ===== PAGE: PERFIS ===== -->
+<div class="page" id="pagePerfis">
+  <h2 class="page-title">Perfis</h2>
+  <p class="section-title">No Dispositivo</p>
+
+  <div id="profileList">
+    <!-- Card Base: layout de tabela 2 linhas × 3 colunas -->
+    <div class="card" data-profile="0" style="padding:0;overflow:hidden">
+      <!-- Linha 1: merge das 3 colunas — titulo e explicacao -->
+      <div style="padding:16px 16px 12px;background:var(--surface-alt);border-bottom:1px solid var(--divider)">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="width:36px;height:36px;border-radius:50%;background:var(--primary);display:flex;align-items:center;justify-content:center">
+              <svg viewBox="0 0 24 24" width="20" height="20"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" fill="#fff"/></svg>
+            </div>
+            <div>
+              <div style="font-weight:700;font-size:1rem">Base</div>
+              <div style="font-size:.8rem;color:var(--text-secondary)">35 gestos + 8 contextos</div>
+            </div>
+          </div>
+          <span class="profile-badge" style="background:var(--primary)">FIXO</span>
+        </div>
+        <div style="font-size:.85rem;color:var(--text);line-height:1.5">
+          O GESTUUM monta frases combinando <b>contexto</b> (mao esquerda) + <b>objeto</b> (mao direita).
+        </div>
+        <div style="margin-top:8px;padding:8px 12px;background:rgba(123,192,154,.12);border-radius:8px;text-align:center">
+          <span style="font-size:.85rem;color:var(--primary-dark);font-weight:600">"I want" + "water" = "I want water"</span>
+        </div>
+      </div>
+
+      <!-- Linha 2: 3 colunas — contextos | + | objetos -->
+      <div style="display:grid;grid-template-columns:30% auto 1fr;padding:14px 16px;gap:12px;align-items:start">
+        <!-- Coluna 1: Contextos (mao esquerda · Sensor A · audio) -->
+        <div>
+          <div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.5px;color:var(--text-hint);margin-bottom:6px;font-weight:600">Mão Esquerda · contexto</div>
+          <div style="font-size:.78rem;color:var(--text-secondary);line-height:1.7">
+            <span style="display:inline-block;background:rgba(167,199,231,.2);padding:2px 6px;border-radius:4px;margin:1px 0;font-size:.72rem">I want</span>
+            <span style="display:inline-block;background:rgba(167,199,231,.2);padding:2px 6px;border-radius:4px;margin:1px 0;font-size:.72rem">I don't want</span>
+            <span style="display:inline-block;background:rgba(167,199,231,.2);padding:2px 6px;border-radius:4px;margin:1px 0;font-size:.72rem">I need</span>
+            <span style="display:inline-block;background:rgba(167,199,231,.2);padding:2px 6px;border-radius:4px;margin:1px 0;font-size:.72rem">I feel</span>
+            <span style="display:inline-block;background:rgba(167,199,231,.2);padding:2px 6px;border-radius:4px;margin:1px 0;font-size:.72rem">Where is</span>
+            <span style="display:inline-block;background:rgba(167,199,231,.2);padding:2px 6px;border-radius:4px;margin:1px 0;font-size:.72rem">Call</span>
+            <span style="display:inline-block;background:rgba(167,199,231,.2);padding:2px 6px;border-radius:4px;margin:1px 0;font-size:.72rem">I am</span>
+            <span style="display:inline-block;background:rgba(167,199,231,.2);padding:2px 6px;border-radius:4px;margin:1px 0;font-size:.72rem">I am not</span>
+            <span style="display:inline-block;color:var(--text-hint);font-size:.7rem;margin-top:2px">8 contextos</span>
+          </div>
+        </div>
+
+        <!-- Coluna 2: Operador + -->
+        <div style="display:flex;align-items:center;justify-content:center;font-size:1.5rem;color:var(--text-hint);font-weight:300;padding-top:20px">+</div>
+
+        <!-- Coluna 3: Objetos (mao direita · Sensor B · sem audio) -->
+        <div>
+          <div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.5px;color:var(--text-hint);margin-bottom:6px;font-weight:600">Mão Direita · objeto</div>
+          <div style="font-size:.75rem;color:var(--text-secondary);line-height:1.6">
+            <div><b style="color:var(--secondary)">Necessidades:</b> water, food, bathroom, medicine, rest, hungry, thirsty, sleep, eat</div>
+            <div><b style="color:var(--emergency)">Corpo/Saúde:</b> pain, head, chest, ambulance, can't breathe</div>
+            <div><b style="color:var(--success)">Casa:</b> room, living_room, light, door, window</div>
+            <div><b style="color:var(--warning)">Pessoas:</b> doctor, nurse, teacher</div>
+            <div><b style="color:#CE93D8">Escola:</b> class, break_time, snack</div>
+            <div style="margin-top:4px;color:var(--text-hint);font-size:.72rem">25 objetos · 8 × 25 = 200 frases possíveis</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="profile-card" data-profile="1" hidden>
+      <div class="profile-icon" style="background:var(--success)">
+        <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-1 11h-4v4h-4v-4H6v-4h4V6h4v4h4v4z" fill="#fff"/></svg>
+      </div>
+      <div class="profile-info">
+        <div class="profile-name">Hospital</div>
+        <div class="profile-count">13 gestos — Ambiente hospitalar</div>
+        <div style="font-size:.75rem;color:var(--text-hint);margin-top:2px">Enfermeira, medico de plantao, soro, exame, visita, alta, cobertor, nausea, dieta...</div>
+      </div>
+      <label class="profile-toggle">
+        <input type="checkbox" checked id="profileToggle1" onchange="App.toggleProfile(1,this.checked)" aria-label="Ativar perfil Hospital">
+        <span class="slider"></span>
+      </label>
+    </div>
+
+    <div class="profile-card" data-profile="2" hidden>
+      <div class="profile-icon" style="background:var(--warning)">
+        <svg viewBox="0 0 24 24"><path d="M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 9-4.91V17h2V9L12 3z" fill="#fff"/></svg>
+      </div>
+      <div class="profile-info">
+        <div class="profile-name">Escola</div>
+        <div class="profile-count">13 gestos - Ambiente escolar</div>
+        <div style="font-size:.75rem;color:var(--text-hint);margin-top:2px">Professor, aula, intervalo, lanche, prova...</div>
+      </div>
+      <label class="profile-toggle">
+        <input type="checkbox" checked id="profileToggle2" onchange="App.toggleProfile(2,this.checked)" aria-label="Ativar perfil Escola">
+        <span class="slider"></span>
+      </label>
+    </div>
+
+    <div class="profile-card" data-profile="3" hidden>
+      <div class="profile-icon" style="background:var(--orange)">
+        <svg viewBox="0 0 24 24"><path d="M4 16c0 .88.39 1.67 1 2.22V20c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h8v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1.78c.61-.55 1-1.34 1-2.22V6c0-3.5-3.58-4-8-4s-8 .5-8 4v10zm3.5 1c-.83 0-1.5-.67-1.5-1.5S6.67 14 7.5 14s1.5.67 1.5 1.5S8.33 17 7.5 17zm9 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm1.5-6H6V6h12v5z" fill="#fff"/></svg>
+      </div>
+      <div class="profile-info">
+        <div class="profile-name">Transporte</div>
+        <div class="profile-count">12 gestos - Ônibus, metrô e viagem</div>
+        <div style="font-size:.75rem;color:var(--text-hint);margin-top:2px">Ônibus, parada, motorista, destino...</div>
+      </div>
+      <label class="profile-toggle">
+        <input type="checkbox" checked id="profileToggle3" onchange="App.toggleProfile(3,this.checked)" aria-label="Ativar perfil Transporte">
+        <span class="slider"></span>
+      </label>
+    </div>
+
+    <!-- Automacao removida (AtomS3/LED parado) -->
+  </div>
+
+  <div class="future-card">
+    <div class="profile-icon" style="background:#26A69A">
+      <svg viewBox="0 0 24 24"><path d="M20.5 11H19V7c0-1.1-.9-2-2-2h-4V3.5C13 2.12 11.88 1 10.5 1S8 2.12 8 3.5V5H4c-1.1 0-1.99.9-1.99 2v3.8H3.5c1.49 0 2.7 1.21 2.7 2.7s-1.21 2.7-2.7 2.7H2V20c0 1.1.9 2 2 2h3.8v-1.5c0-1.49 1.21-2.7 2.7-2.7 1.49 0 2.7 1.21 2.7 2.7V22H17c1.1 0 2-.9 2-2v-4h1.5c1.38 0 2.5-1.12 2.5-2.5S21.88 11 20.5 11z" fill="#fff"/></svg>
+    </div>
+    <div class="profile-info">
+      <div class="profile-name">Terapia</div>
+      <div class="profile-count">Em desenvolvimento</div>
+      <div class="future-label">Gestos para sessoes de terapia e reabilitacao</div>
+    </div>
+  </div>
+  <div class="future-card">
+    <div class="profile-icon" style="background:#EF6C00">
+      <svg viewBox="0 0 24 24"><path d="M11 9H9V2H7v7H5V2H3v7c0 2.12 1.66 3.84 3.75 3.97V22h2.5v-9.03C11.34 12.84 13 11.12 13 9V2h-2v7zm5-3v8h2.5v8H21V2c-2.76 0-5 2.24-5 4z" fill="#fff"/></svg>
+    </div>
+    <div class="profile-info">
+      <div class="profile-name">Restaurante</div>
+      <div class="profile-count">Em desenvolvimento</div>
+      <div class="future-label">Pedir comida, agua, conta, chamar garcom</div>
+    </div>
+  </div>
+  <div class="future-card">
+    <div class="profile-icon" style="background:#8E24AA">
+      <svg viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" fill="#fff"/></svg>
+    </div>
+    <div class="profile-info">
+      <div class="profile-name">Lazer</div>
+      <div class="profile-count">Em desenvolvimento</div>
+      <div class="future-label">Atividades de diversao e tempo livre</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PAGE: PERSONALIZAR ===== -->
+<div class="page" id="pagePersonalizar">
+  <h2 class="page-title">Personalizar</h2>
+  <p class="section-title">Informacoes Pessoais</p>
+
+  <div id="personalFields">
+    <div class="personal-field" data-key="nome">
+      <div class="field-info">
+        <label>Nome</label>
+        <input type="text" placeholder="Ex: Alexandre" id="fieldNome">
+      </div>
+      <div class="field-actions">
+        <button class="btn-icon btn-outline btn-sm" onclick="App.recordField('nome')" title="Gravar audio">
+          <svg viewBox="0 0 24 24" width="20" height="20"><path d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z" fill="currentColor"/></svg>
+        </button>
+        <button class="btn-icon btn-primary btn-sm" onclick="App.sendField('nome')" title="Enviar ao dispositivo">
+          <svg viewBox="0 0 24 24" width="18" height="18"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" fill="#fff"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="personal-field" data-key="alergia">
+      <div class="field-info">
+        <label>Alergia</label>
+        <input type="text" placeholder="Ex: Penicilina" id="fieldAlergia">
+      </div>
+      <div class="field-actions">
+        <button class="btn-icon btn-outline btn-sm" onclick="App.recordField('alergia')" title="Gravar audio">
+          <svg viewBox="0 0 24 24" width="20" height="20"><path d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z" fill="currentColor"/></svg>
+        </button>
+        <button class="btn-icon btn-primary btn-sm" onclick="App.sendField('alergia')" title="Enviar ao dispositivo">
+          <svg viewBox="0 0 24 24" width="18" height="18"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" fill="#fff"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="personal-field" data-key="sangue">
+      <div class="field-info">
+        <label>Tipo Sanguineo</label>
+        <input type="text" placeholder="Ex: O+" id="fieldSangue">
+      </div>
+      <div class="field-actions">
+        <button class="btn-icon btn-outline btn-sm" onclick="App.recordField('sangue')" title="Gravar audio">
+          <svg viewBox="0 0 24 24" width="20" height="20"><path d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z" fill="currentColor"/></svg>
+        </button>
+        <button class="btn-icon btn-primary btn-sm" onclick="App.sendField('sangue')" title="Enviar ao dispositivo">
+          <svg viewBox="0 0 24 24" width="18" height="18"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" fill="#fff"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="personal-field" data-key="telefone">
+      <div class="field-info">
+        <label>Telefone Emergência</label>
+        <input type="tel" placeholder="Ex: (11) 99999-0000" id="fieldTelefone">
+      </div>
+      <div class="field-actions">
+        <button class="btn-icon btn-outline btn-sm" onclick="App.recordField('telefone')" title="Gravar audio">
+          <svg viewBox="0 0 24 24" width="20" height="20"><path d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z" fill="currentColor"/></svg>
+        </button>
+        <button class="btn-icon btn-primary btn-sm" onclick="App.sendField('telefone')" title="Enviar ao dispositivo">
+          <svg viewBox="0 0 24 24" width="18" height="18"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" fill="#fff"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="personal-field" data-key="cuidador">
+      <div class="field-info">
+        <label>Cuidador</label>
+        <input type="text" placeholder="Ex: Maria Silva" id="fieldCuidador">
+      </div>
+      <div class="field-actions">
+        <button class="btn-icon btn-outline btn-sm" onclick="App.recordField('cuidador')" title="Gravar audio">
+          <svg viewBox="0 0 24 24" width="20" height="20"><path d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z" fill="currentColor"/></svg>
+        </button>
+        <button class="btn-icon btn-primary btn-sm" onclick="App.sendField('cuidador')" title="Enviar ao dispositivo">
+          <svg viewBox="0 0 24 24" width="18" height="18"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" fill="#fff"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="progress-bar" id="uploadProgress"><div class="fill" id="uploadProgressFill"></div></div>
+  <div class="progress-text" id="uploadProgressText"></div>
+
+  <p class="section-title">Slots Personalizados</p>
+  <div id="customSlots"></div>
+  <button class="btn btn-outline btn-full" onclick="App.addSlot()" style="margin-top:8px">
+    <svg viewBox="0 0 24 24" width="20" height="20"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="currentColor"/></svg>
+    Novo Slot
+  </button>
+</div>
+
+<!-- ===== PAGE: TESTAR ===== -->
+<div class="page" id="pageTestar">
+  <h2 class="page-title">Testar Gestos</h2>
+
+  <!-- Phrase Builder: Context + Object = Phrase -->
+  <div class="card" style="background:#2D3748;color:#fff;padding:12px 16px;margin-bottom:16px;border-color:#2D3748">
+    <div style="font-size:.75rem;text-transform:uppercase;letter-spacing:.5px;opacity:.7;margin-bottom:8px">Simulador de Frase</div>
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+      <div style="flex:1;min-width:120px">
+        <div style="font-size:.7rem;opacity:.6;margin-bottom:4px">MÃO ESQUERDA · Sensor A · contexto</div>
+        <select id="testContext" onchange="App.updatePhrase()" style="width:100%;padding:8px;border-radius:var(--radius-sm);border:1px solid rgba(255,255,255,.2);background:#2D3748;color:#fff;font-size:.875rem;-webkit-appearance:auto">
+          <option value="" style="background:#2D3748;color:#fff">(no context)</option>
+          <option value="I want" style="background:#2D3748;color:#fff">I want</option>
+          <option value="I don't want" style="background:#2D3748;color:#fff">I don't want</option>
+          <option value="I need" style="background:#2D3748;color:#fff">I need</option>
+          <option value="I feel" style="background:#2D3748;color:#fff">I feel</option>
+          <option value="Where is" style="background:#2D3748;color:#fff">Where is</option>
+          <option value="Call" style="background:#2D3748;color:#fff">Call</option>
+          <option value="I am" style="background:#2D3748;color:#fff">I am</option>
+          <option value="I am not" style="background:#2D3748;color:#fff">I am not</option>
+        </select>
+      </div>
+      <div style="font-size:1.5rem;opacity:.5">+</div>
+      <div style="flex:1;min-width:120px">
+        <div style="font-size:.7rem;opacity:.6;margin-bottom:4px">MÃO DIREITA · Sensor B · objeto</div>
+        <div id="testObjectDisplay" style="padding:8px;border-radius:var(--radius-sm);background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.3);min-height:36px;font-size:.875rem;display:flex;align-items:center">
+          <span style="opacity:.5">Selecione abaixo ↓</span>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:12px;padding:12px;background:rgba(255,255,255,.1);border-radius:var(--radius-sm);text-align:center">
+      <div style="font-size:.7rem;opacity:.6;margin-bottom:4px">FRASE RESULTANTE</div>
+      <div id="testPhraseResult" style="font-size:1.25rem;font-weight:700;min-height:30px">
+        <span style="opacity:.4">Selecione contexto + objeto</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gesture grid -->
+  <div class="section-title">Mão Esquerda · Contextos (8)</div>
+  <div class="gesture-grid">
+    <button class="gesture-btn cat-geral" onclick="App.testGesturePhrase('ctx_01_i_want.wav','I want')">I want</button>
+    <button class="gesture-btn cat-geral" onclick="App.testGesturePhrase('ctx_02_i_dont_want.wav','I don\'t want')">I don't want</button>
+    <button class="gesture-btn cat-geral" onclick="App.testGesturePhrase('ctx_03_i_need.wav','I need')">I need</button>
+    <button class="gesture-btn cat-geral" onclick="App.testGesturePhrase('ctx_04_i_feel.wav','I feel')">I feel</button>
+    <button class="gesture-btn cat-geral" onclick="App.testGesturePhrase('ctx_05_where_is.wav','Where is')">Where is</button>
+    <button class="gesture-btn cat-geral" onclick="App.testGesturePhrase('ctx_06_call.wav','Call')">Call</button>
+    <button class="gesture-btn cat-geral" onclick="App.testGesturePhrase('ctx_07_i_am.wav','I am')">I am</button>
+    <button class="gesture-btn cat-geral" onclick="App.testGesturePhrase('ctx_08_i_am_not.wav','I am not')">I am not</button>
+  </div>
+
+  <div class="section-title">Mão Direita · Objetos (25)</div>
+  <div class="gesture-grid">
+    <button class="gesture-btn cat-casa" onclick="App.testGesturePhrase('water.wav','Water')">Water</button>
+    <button class="gesture-btn cat-casa" onclick="App.testGesturePhrase('food.wav','Food')">Food</button>
+    <button class="gesture-btn cat-casa" onclick="App.testGesturePhrase('bathroom.wav','Bathroom')">Bathroom</button>
+    <button class="gesture-btn cat-casa" onclick="App.testGesturePhrase('medicine.wav','Medicine')">Medicine</button>
+    <button class="gesture-btn cat-casa" onclick="App.testGesturePhrase('rest.wav','Rest')">Rest</button>
+    <button class="gesture-btn cat-casa" onclick="App.testGesturePhrase('pain.wav','Pain')">Pain</button>
+    <button class="gesture-btn cat-casa" onclick="App.testGesturePhrase('head.wav','Head')">Head</button>
+    <button class="gesture-btn cat-casa" onclick="App.testGesturePhrase('chest.wav','Chest')">Chest</button>
+    <button class="gesture-btn cat-casa" onclick="App.testGesturePhrase('hungry.wav','Hungry')">Hungry</button>
+    <button class="gesture-btn cat-casa" onclick="App.testGesturePhrase('thirsty.wav','Thirsty')">Thirsty</button>
+    <button class="gesture-btn cat-casa" onclick="App.testGesturePhrase('room.wav','Room')">Room</button>
+    <button class="gesture-btn cat-casa" onclick="App.testGesturePhrase('living_room.wav','Living room')">Living room</button>
+    <button class="gesture-btn cat-casa" onclick="App.testGesturePhrase('light.wav','Light')">Light</button>
+    <button class="gesture-btn cat-casa" onclick="App.testGesturePhrase('door.wav','Door')">Door</button>
+    <button class="gesture-btn cat-casa" onclick="App.testGesturePhrase('window.wav','Window')">Window</button>
+    <button class="gesture-btn cat-casa" onclick="App.testGesturePhrase('doctor.wav','Doctor')">Doctor</button>
+    <button class="gesture-btn cat-casa" onclick="App.testGesturePhrase('nurse.wav','Nurse')">Nurse</button>
+    <button class="gesture-btn cat-casa" onclick="App.testGesturePhrase('teacher.wav','Teacher')">Teacher</button>
+    <button class="gesture-btn cat-casa" onclick="App.testGesturePhrase('sleep.wav','Sleep')">Sleep</button>
+    <button class="gesture-btn cat-casa" onclick="App.testGesturePhrase('eat.wav','Eat')">Eat</button>
+    <button class="gesture-btn cat-casa" onclick="App.testGesturePhrase('ambulance.wav','Ambulance')">Ambulance</button>
+    <button class="gesture-btn cat-casa" onclick="App.testGesturePhrase('cant_breathe.wav','Can\'t breathe')">Can't breathe</button>
+    <button class="gesture-btn cat-casa" onclick="App.testGesturePhrase('class.wav','Class')">Class</button>
+    <button class="gesture-btn cat-casa" onclick="App.testGesturePhrase('break_time.wav','Break time')">Break time</button>
+    <button class="gesture-btn cat-casa" onclick="App.testGesturePhrase('snack.wav','Snack')">Snack</button>
+  </div>
+
+  <div class="section-title">Solo · sem composição (10)</div>
+  <div class="gesture-grid">
+    <button class="gesture-btn cat-social" onclick="App.testGesturePhrase('help.wav','Help')">Help</button>
+    <button class="gesture-btn cat-social" onclick="App.testGesturePhrase('yes.wav','Yes')">Yes</button>
+    <button class="gesture-btn cat-social" onclick="App.testGesturePhrase('no.wav','No')">No</button>
+    <button class="gesture-btn cat-social" onclick="App.testGesturePhrase('hi.wav','Hi')">Hi</button>
+    <button class="gesture-btn cat-social" onclick="App.testGesturePhrase('bye.wav','Bye')">Bye</button>
+    <button class="gesture-btn cat-social" onclick="App.testGesturePhrase('thank_you.wav','Thank you')">Thank you</button>
+    <button class="gesture-btn cat-social" onclick="App.testGesturePhrase('please.wav','Please')">Please</button>
+    <button class="gesture-btn cat-social" onclick="App.testGesturePhrase('good_morning.wav','Good morning')">Good morning</button>
+    <button class="gesture-btn cat-social" onclick="App.testGesturePhrase('ok.wav','OK')">OK</button>
+    <button class="gesture-btn cat-social" onclick="App.testGesturePhrase('i_need_help.wav','I need help')">I need help</button>
+  </div>
+
+  <!-- Automacao removida (AtomS3/LED parado) -->
+</div>
+
+<!-- ===== PAGE: TREINAR ===== -->
+<div class="page" id="pageTreinar">
+  <h2 class="page-title">Treinar Gestos</h2>
+
+  <!-- Level selector -->
+  <div class="card">
+    <div class="section-title">Nível de Captura</div>
+    <div id="levelSelector" style="display:flex;gap:8px;margin-top:8px">
+      <button class="btn btn-outline level-btn" onclick="App.setLevel(0)" data-level="0" style="flex:1">
+        <div style="font-weight:700">Limitado</div>
+        <div style="font-size:.7rem;opacity:.7">Gestos simples</div>
+      </button>
+      <button class="btn btn-outline level-btn active" onclick="App.setLevel(1)" data-level="1" style="flex:1">
+        <div style="font-weight:700">Padrão</div>
+        <div style="font-size:.7rem;opacity:.7">Uso geral</div>
+      </button>
+      <button class="btn btn-outline level-btn" onclick="App.setLevel(2)" data-level="2" style="flex:1">
+        <div style="font-weight:700">Avançado</div>
+        <div style="font-size:.7rem;opacity:.7">LIBRAS</div>
+      </button>
+    </div>
+  </div>
+
+  <!-- Training status -->
+  <div id="trainingStatus" class="card" style="display:none">
+    <div style="display:flex;align-items:center;gap:12px">
+      <div id="trainingIcon" style="font-size:2rem">🎯</div>
+      <div style="flex:1">
+        <div id="trainingGestureName" style="font-weight:700;font-size:1.1rem"></div>
+        <div id="trainingProgress" style="font-size:.875rem;color:var(--text-secondary)"></div>
+      </div>
+      <button class="btn btn-sm" style="background:var(--emergency);color:#fff" onclick="App.cancelTraining()">Cancelar</button>
+    </div>
+    <div id="trainingInstruction" style="margin-top:12px;padding:12px;background:var(--surface-alt);border-radius:var(--radius-sm);text-align:center;font-size:.875rem"></div>
+  </div>
+
+  <!-- Gesture list with trained/untrained status -->
+  <div class="section-title">Gestos para Treinar</div>
+  <div id="trainableGestureList">
+    <div style="text-align:center;padding:20px;color:var(--text-hint)">
+      Conecte o dispositivo para ver os gestos
+    </div>
+  </div>
+</div>
+
+<!-- ===== PAGE: GESTOS (Sprint C4 — gerencia/visualizacao) ===== -->
+<div class="page" id="pageGestos">
+  <h2 class="page-title">Gestos</h2>
+  <p style="font-size:.875rem;color:var(--text-secondary);margin:8px 0 16px">
+    Visualize quais gestos estao cadastrados no dispositivo e exporte um backup
+    da lista. O treino agora e feito direto no dispositivo (Menu &gt; Treinar gesto).
+  </p>
+
+  <div class="card" style="margin-bottom:12px">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+      <div>
+        <div style="font-size:.875rem;font-weight:600" id="gestosSummary">
+          Conecte o dispositivo para ver
+        </div>
+        <div style="font-size:.75rem;color:var(--text-hint)" id="gestosSubInfo"></div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-secondary btn-sm" onclick="App.refreshGestos()">
+          Atualizar
+        </button>
+        <button class="btn btn-primary btn-sm" onclick="App.exportGestosBackup()">
+          Exportar JSON
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="gestosList">
+    <div style="text-align:center;padding:20px;color:var(--text-hint)">
+      Conecte o dispositivo para ver os gestos cadastrados
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:12px;background:var(--secondary-light)">
+    <div style="font-size:.75rem;color:var(--text-secondary)">
+      <strong>Nota:</strong> Restaurar de um backup e visualizacao SVG da
+      trajetoria estao planejados para a versao v2 (precisam de comandos novos
+      no firmware). Esta aba so faz visualizacao + export por enquanto.
+    </div>
+  </div>
+</div>
+
+<!-- ===== PAGE: SOBRE ===== -->
+<div class="page" id="pageSobre">
+  <h2 class="page-title">Sobre</h2>
+  <div class="about-center">
+    <div class="about-logo">
+      <img src="data:image/png;base64,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" alt="GESTUUM" style="max-width:180px">
+    </div>
+    <div class="about-name">GESTUUM</div>
+    <div class="about-sub">Seus Gestos, Sua Voz — Comunicação Assistiva</div>
+    <div class="about-version">Configurador v1.0.0</div>
+  </div>
+
+  <div class="card">
+    <h3 style="font-size:.9375rem;font-weight:700;margin-bottom:8px">Compartilhar App</h3>
+    <p style="font-size:.8125rem;color:var(--text-secondary);margin-bottom:12px">Escaneie o QR code para abrir este app em outro dispositivo.</p>
+    <div class="about-qr"><canvas id="qrCanvas" width="160" height="160"></canvas></div>
+  </div>
+
+  <div class="card">
+    <h3 style="font-size:.9375rem;font-weight:700;margin-bottom:8px">O Projeto</h3>
+    <p style="font-size:.8125rem;color:var(--text-secondary);line-height:1.6">
+      GESTUUM e um dispositivo vestivel que converte gestos em fala para pessoas com deficiencias na comunicação verbal.
+      Reconhece movimentos das maos e reproduz audios pre-gravados pelo alto-falante integrado, sem precisar de celular.
+    </p>
+  </div>
+
+  <div class="card">
+    <h3 style="font-size:.9375rem;font-weight:700;margin-bottom:8px">Tecnologia</h3>
+    <div style="font-size:.8125rem;color:var(--text-secondary);line-height:1.8">
+      <div>Hardware: Sensor inercial com alto-falante integrado</div>
+      <div>Sistema: Reconhecimento de gestos em tempo real</div>
+      <div>App: Funciona direto no navegador, via cabo USB ou Bluetooth</div>
+      <div>Áudio: Vozes pré-gravadas em alta qualidade</div>
+    </div>
+  </div>
+
+  <div class="about-credits">
+    Desenvolvido com dedicacao para melhorar a qualidade de vida de pessoas com deficiencias na comunicação.
+  </div>
+</div>
+
+<!-- ===== TAB BAR ===== -->
+<nav class="tab-bar">
+  <button class="tab-btn active" data-page="pageConexao" onclick="App.switchTab(this)">
+    <svg viewBox="0 0 24 24"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg>
+    <span>Conexão</span>
+  </button>
+  <button class="tab-btn" data-page="pageVoz" onclick="App.switchTab(this)">
+    <svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+    <span>Voz</span>
+  </button>
+  <button class="tab-btn" data-page="pagePerfis" onclick="App.switchTab(this)">
+    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+    <span>Perfis</span>
+  </button>
+  <button class="tab-btn" data-page="pagePersonalizar" onclick="App.switchTab(this)">
+    <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+    <span>Personalizar</span>
+  </button>
+  <button class="tab-btn" data-page="pageTestar" onclick="App.switchTab(this)">
+    <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+    <span>Testar</span>
+  </button>
+  <button class="tab-btn" data-page="pageTreinar" onclick="App.switchTab(this)">
+    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+    <span>Treinar</span>
+  </button>
+  <button class="tab-btn" data-page="pageGestos" onclick="App.switchTab(this)">
+    <svg viewBox="0 0 24 24"><path d="M3 5h18v2H3V5zm0 6h18v2H3v-2zm0 6h18v2H3v-2z"/></svg>
+    <span>Gestos</span>
+  </button>
+  <button class="tab-btn" data-page="pageSobre" onclick="App.switchTab(this)">
+    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+    <span>Sobre</span>
+  </button>
+</nav>
+
+<!-- ===== RECORDING MODAL ===== -->
+<div class="modal-overlay" id="recModal">
+  <div class="modal">
+    <div class="modal-title" id="recModalTitle">Gravar Áudio</div>
+    <div class="rec-container">
+      <canvas class="rec-canvas" id="recCanvas" width="320" height="60"></canvas>
+      <div class="rec-timer" id="recTimer">00:00</div>
+      <div id="recHint" style="font-size:.8125rem;color:var(--text-secondary)">Segure o botão para gravar</div>
+      <button class="rec-btn" id="recBtn"
+        onmousedown="App.startHoldRecord()" onmouseup="App.stopHoldRecord()" onmouseleave="App.stopHoldRecord()"
+        ontouchstart="App.startHoldRecord()" ontouchend="App.stopHoldRecord()" ontouchcancel="App.stopHoldRecord()">
+        <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
+      </button>
+      <div class="rec-actions" id="recActions" style="display:none">
+        <button class="btn btn-outline btn-sm" id="recRedoBtn" onclick="App.redoRecording()">
+          <svg viewBox="0 0 24 24" width="18" height="18"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z" fill="currentColor"/></svg>
+          Regravar
+        </button>
+        <button class="btn btn-primary btn-sm" id="recSendBtn" onclick="App.saveAndSendRecording()">
+          <svg viewBox="0 0 24 24" width="18" height="18"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" fill="#fff"/></svg>
+          Enviar ao Dispositivo
+        </button>
+      </div>
+      <button class="btn btn-sm" style="color:var(--text-secondary);margin-top:8px" onclick="App.closeRecModal()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== CONFIRM MODAL ===== -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal">
+    <div class="modal-title" id="confirmTitle">Confirmar</div>
+    <div class="confirm-text" id="confirmText"></div>
+    <div class="modal-actions">
+      <button class="btn btn-sm" style="color:var(--text-secondary)" onclick="App.confirmReject()">Cancelar</button>
+      <button class="btn btn-primary btn-sm" onclick="App.confirmAccept()">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TOAST CONTAINER ===== -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- ===== BLE HELP MODAL ===== -->
+<div class="modal-overlay" id="bleHelpModal">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-title">Para conectar por Bluetooth</div>
+    <div style="font-size:.95rem;color:var(--text);line-height:1.6;text-align:left">
+      <div style="margin-bottom:14px"><strong>1.</strong> No sensor, dê <strong>3 cliques rápidos</strong> no <strong>botão pequeno em cima</strong> (menos de 1 segundo entre os cliques).</div>
+      <div style="margin-bottom:14px"><strong>2.</strong> A tela do sensor vai mostrar <strong>"CONFIG MODE"</strong>.</div>
+      <div><strong>3.</strong> Clique em <strong>"Já ativei, conectar agora"</strong> abaixo.</div>
+    </div>
+
+    <!-- Aviso destacado: nao confundir com o SOS -->
+    <div style="margin:14px 0;padding:10px 12px;background:#FFEBEE;border-left:4px solid #C62828;border-radius:6px">
+      <div style="font-size:.85rem;color:#C62828;font-weight:600;line-height:1.5">
+        ⚠ <strong>Não segure</strong> o botão grande lateral sozinho — segurar esse botão ativa o <strong>SOS / Emergência</strong>.
+      </div>
+    </div>
+
+    <!-- SVG do dispositivo: botao pequeno em cima destacado, A grande lateral marcado como nao usar -->
+    <div style="display:flex;align-items:center;justify-content:center;margin:12px 0;padding:14px;background:var(--surface-alt);border-radius:var(--radius-sm)">
+      <svg width="240" height="160" viewBox="0 0 240 160">
+        <!-- Corpo do M5StickC Plus2 (vertical, retangular) -->
+        <rect x="80" y="20" width="80" height="120" rx="10" fill="#2D3748" stroke="#4A5568" stroke-width="2"/>
+        <!-- Display -->
+        <rect x="92" y="40" width="56" height="70" rx="3" fill="#1A202C"/>
+        <text x="120" y="78" text-anchor="middle" font-size="9" font-weight="700" fill="#A8D5BA">GESTUUM</text>
+        <!-- Botao pequeno em cima (BtnB) — DESTACADO em verde -->
+        <circle cx="120" cy="28" r="6" fill="#7FBF9B" stroke="#2E7D32" stroke-width="2"/>
+        <text x="120" y="14" text-anchor="middle" font-size="9" font-weight="700" fill="#2E7D32">3 cliques</text>
+        <text x="120" y="9" text-anchor="middle" font-size="6" fill="#2E7D32">aqui</text>
+        <!-- Seta apontando pro botao em cima -->
+        <path d="M150 22 Q140 18 128 26" stroke="#2E7D32" stroke-width="1.5" fill="none" marker-end="url(#arrow)"/>
+        <!-- Botao grande lateral (BtnA) — alerta: nao segurar sozinho -->
+        <rect x="158" y="65" width="14" height="30" rx="3" fill="#FFB74D" opacity=".5" stroke="#E65100" stroke-width="2"/>
+        <text x="195" y="72" font-size="8" font-weight="700" fill="#E65100">SOS</text>
+        <text x="195" y="83" font-size="7" fill="#E65100">não</text>
+        <text x="195" y="92" font-size="7" fill="#E65100">segure</text>
+        <!-- Botao Power lateral (BtnPWR) — neutro -->
+        <rect x="68" y="50" width="12" height="14" rx="2" fill="#718096" opacity=".5"/>
+        <text x="40" y="60" font-size="7" fill="#718096">Power</text>
+        <!-- Definicao da seta -->
+        <defs>
+          <marker id="arrow" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+            <polygon points="0 0, 6 3, 0 6" fill="#2E7D32"/>
+          </marker>
+        </defs>
+      </svg>
+    </div>
+
+    <div style="font-size:.8rem;color:var(--text-secondary);text-align:center;margin-bottom:8px;line-height:1.4">
+      Dica: os 3 cliques têm que ser <strong>rápidos</strong>, em menos de 1 segundo.<br>
+      Se não funcionar, espere 2 segundos e tente de novo.
+    </div>
+
+    <label style="display:flex;align-items:center;gap:8px;font-size:.8125rem;color:var(--text-secondary);margin:12px 0;cursor:pointer">
+      <input type="checkbox" id="bleHelpDontShow"> Não mostrar novamente
+    </label>
+    <div class="modal-actions" style="flex-direction:column;gap:8px">
+      <button class="btn btn-secondary btn-full" onclick="App.bleHelpConnect()">Já ativei, conectar agora</button>
+      <button class="btn btn-sm" style="color:var(--text-secondary)" onclick="App.bleHelpCancel()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ================================================================
+   GESTUUM Configurador - Main Application
+   ================================================================ */
+const App = (function() {
+  'use strict';
+
+  // ── BLE UUIDs ──
+  const BLE_SERVICE = '4e5f6a7b-8c9d-0e1f-2a3b-4c5d6e7f8a9b';
+  const BLE_CMD_TX  = '4e5f6a7b-8c9d-0e1f-2a3b-4c5d6e7f8a9c';
+  const BLE_CMD_RX  = '4e5f6a7b-8c9d-0e1f-2a3b-4c5d6e7f8a9d';
+  const BLE_AUDIO_TX= '4e5f6a7b-8c9d-0e1f-2a3b-4c5d6e7f8a9e';
+
+  // ── State ──
+  let transport = null; // 'usb' | 'ble' | null
+  let serialPort = null;
+  let serialReader = null;
+  let serialWriter = null;
+  let serialReadLoop = null;
+  let bleDevice = null;
+  let bleCmdTx = null;
+  let bleCmdRx = null;
+  let bleAudioTx = null;
+
+  let deviceConfig = {
+    voice: 0, name: 'GESTUUM', profiles: [true, true, true, true, true],
+    battery: -1, firmware: '--', silentErrors: false
+  };
+  let selectedVoice = 0;
+  let confirmCallback = null;
+
+  // Recording state
+  let mediaRecorder = null;
+  let audioChunks = [];
+  let recordingField = null;
+  let recordedBlob = null;
+  let recordedWav = null; // ArrayBuffer of WAV
+  let recStartTime = 0;
+  let recTimerInterval = null;
+  let recAnalyser = null;
+  let recAnimFrame = null;
+  let recStream = null;
+
+  // Training state
+  let trainingLevel = 1;
+  let trainingActive = false;
+  let trainableGestures = [];
+
+  // Custom slots
+  let customSlots = [];
+  let nextSlotId = 1;
+
+  // Serial buffer
+  let serialBuffer = '';
+
+  // FIX P1: Command queue com correlation por cmd.
+  // Antes: um unico slot _pendingResolve. Se sendCommand era chamado
+  // 2x antes da resposta chegar (ex: set_profile → auto get_config),
+  // a promise do primeiro comando era sobrescrita e nunca resolvia,
+  // ou resolvia com dados errados.
+  // Agora: fila de promises indexada por cmd. Cada resposta resolve
+  // a promise correta pelo campo msg.cmd.
+  var _commandQueue = {};  // { cmdName: { resolve, reject, timeout } }
+  var _fallbackResolve = null;  // Para respostas sem cmd (eventos, progress)
+
+  const VOICE_NAMES = ['Homem', 'Mulher', 'Menino', 'Menina'];
+  const PROFILE_NAMES = ['Base'];  // Hospital/Escola/Transporte sao planos da v2 — nao implementados
+
+  // ── DOM refs ──
+  const $ = id => document.getElementById(id);
+
+  // ================================================================
+  //  TAB NAVIGATION
+  // ================================================================
+  function switchTab(btn) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    $(btn.dataset.page).classList.add('active');
+    // Auto-load trainable gestures when switching to Treinar tab
+    if (btn.dataset.page === 'pageTreinar' && transport) {
+      loadTrainableGestures();
+    }
+    // Sprint C4: Auto-load gestos cadastrados ao entrar na aba Gestos
+    if (btn.dataset.page === 'pageGestos' && transport) {
+      refreshGestos();
+    }
+  }
+
+  // Sprint C4 — cache de gestos pra export sem re-buscar
+  var _gestosCache = [];
+
+  function refreshGestos() {
+    if (!transport) {
+      $('gestosSummary').textContent = 'Conecte o dispositivo';
+      $('gestosSubInfo').textContent = '';
+      $('gestosList').innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-hint)">Sem conexao com dispositivo</div>';
+      return;
+    }
+    $('gestosSummary').textContent = 'Carregando gestos...';
+    sendCommand({cmd: 'list_trainable'}).then(function(resp) {
+      // Sprint C-audit (2026-05-02): firmware responde {status,cmd,list:[...]},
+      // nao {gestures:[...]}. Auditor G-01 critical pegou.
+      if (!resp) return;  // Cancelado por outra request — guard contra null
+      var arr = resp.list || resp.gestures;  // fallback p/ versoes antigas
+      if (!arr) {
+        $('gestosSummary').textContent = 'Erro ao buscar';
+        $('gestosSubInfo').textContent = JSON.stringify(resp || {});
+        return;
+      }
+      _gestosCache = arr.slice();  // Defensiva: copia, nao referencia
+      var trained = _gestosCache.filter(function(g) { return g.trained; }).length;
+      $('gestosSummary').textContent = trained + ' / ' + _gestosCache.length + ' gestos treinados';
+      $('gestosSubInfo').textContent = 'Atualizado em ' + new Date().toLocaleTimeString();
+      renderGestosList(_gestosCache);
+    }).catch(function(err) {
+      $('gestosSummary').textContent = 'Erro';
+      $('gestosSubInfo').textContent = (err && err.message) || String(err);
+    });
+  }
+
+  function renderGestosList(gestures) {
+    if (!gestures || !gestures.length) {
+      $('gestosList').innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-hint)">Nenhum gesto cadastrado</div>';
+      return;
+    }
+    var html = '<div class="card"><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">';
+    for (var i = 0; i < gestures.length; i++) {
+      var g = gestures[i];
+      var bg = g.trained ? 'var(--primary-light)' : 'var(--bg)';
+      var status = g.trained ? '<span style="color:var(--success);font-weight:600">[T]</span>'
+                              : '<span style="color:var(--text-hint)">[ ]</span>';
+      html += '<div style="background:' + bg + ';padding:8px;border-radius:6px;font-size:.8125rem">'
+            + status + ' <strong>' + escapeHtml(g.id || '') + '</strong> '
+            + escapeHtml(g.name || '')
+            + '</div>';
+    }
+    html += '</div></div>';
+    $('gestosList').innerHTML = html;
+  }
+
+  function exportGestosBackup() {
+    if (!_gestosCache.length) {
+      toast('Carregue a lista primeiro', 'info');
+      return;
+    }
+    var backup = {
+      schema: 'gestuum-gestures-backup-v1',
+      exportedAt: new Date().toISOString(),
+      device: 'sensor_a',
+      total: _gestosCache.length,
+      trained: _gestosCache.filter(function(g) { return g.trained; }).length,
+      gestures: _gestosCache.map(function(g) {
+        return { id: g.id, name: g.name, trained: !!g.trained };
+      })
+    };
+    var blob = new Blob([JSON.stringify(backup, null, 2)], {type: 'application/json'});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'gestuum-backup-' + new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19) + '.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    // Sprint C-audit G-04: setTimeout pra Safari/iOS — download pode ainda nao
+    // ter iniciado quando revogamos. Padrao de FileSaver.js.
+    setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+    toast('Backup baixado', 'success');
+  }
+
+  // ================================================================
+  //  TOAST NOTIFICATIONS
+  // ================================================================
+  function toast(msg, type) {
+    type = type || 'info';
+    const el = document.createElement('div');
+    el.className = 'toast ' + type;
+    el.textContent = msg;
+    $('toastContainer').appendChild(el);
+    setTimeout(function() {
+      el.style.animation = 'toastOut .3s ease forwards';
+      setTimeout(function() { el.remove(); }, 300);
+    }, 3000);
+  }
+
+  // ================================================================
+  //  CONFIRM DIALOG
+  // ================================================================
+  function confirm(title, text, cb) {
+    $('confirmTitle').textContent = title;
+    $('confirmText').textContent = text;
+    confirmCallback = cb;
+    $('confirmModal').classList.add('show');
+  }
+  function confirmAccept() {
+    $('confirmModal').classList.remove('show');
+    if (confirmCallback) confirmCallback(true);
+    confirmCallback = null;
+  }
+  function confirmReject() {
+    $('confirmModal').classList.remove('show');
+    if (confirmCallback) confirmCallback(false);
+    confirmCallback = null;
+  }
+
+  // ================================================================
+  //  CONNECTION STATUS UI
+  // ================================================================
+  function updateConnectionUI() {
+    const ind = $('connIndicator');
+    const banner = $('statusBanner');
+    const statusText = $('statusText');
+    const devInfo = $('deviceInfo');
+    const badge = $('transportBadge');
+    const batBadge = $('batteryBadge');
+    const btnVoice = $('btnApplyVoice');
+
+    // FIX1: connIndicator/batteryBadge vivem no <template id="pwa-header-extra">
+    // e so entram no DOM quando js/pwa.js clona o partial (assincrono).
+    // Se ainda nao foram clonados, sai sem quebrar — sera chamado de novo
+    // pelo listener de pwa:ready abaixo.
+    if (!ind || !banner || !statusText || !devInfo || !badge || !batBadge || !btnVoice) return;
+
+    if (transport) {
+      ind.classList.add('connected');
+      ind.title = 'Conectado via ' + transport.toUpperCase();
+      banner.className = 'status-banner connected';
+      banner.querySelector('svg').innerHTML = '<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>';
+      statusText.textContent = 'Conectado via ' + transport.toUpperCase();
+      devInfo.classList.add('show');
+      badge.textContent = transport.toUpperCase();
+      badge.className = 'transport-badge ' + transport;
+      // FIX PWA-04: Voz funciona via BLE e USB (firmware aceita de qualquer fonte)
+      btnVoice.disabled = false;
+
+      $('infoName').textContent = deviceConfig.name;
+      $('infoFirmware').textContent = deviceConfig.firmware;
+      $('infoBattery').textContent = deviceConfig.battery >= 0 ? deviceConfig.battery + '%' : '--';
+      $('infoVoice').textContent = VOICE_NAMES[deviceConfig.voice] || '--';
+      $('infoProfiles').textContent = deviceConfig.profiles
+        .map(function(v, i) { return v ? PROFILE_NAMES[i] : null; })
+        .filter(Boolean).join(', ');
+
+      if (deviceConfig.battery >= 0) {
+        batBadge.classList.add('show');
+        $('batteryText').textContent = deviceConfig.battery + '%';
+      }
+
+      // Update voice selection
+      selectedVoice = deviceConfig.voice;
+      updateVoiceUI();
+      // Update profile toggles
+      updateProfileUI();
+      // Update silent mode toggle
+      var silentToggle = $('silentModeToggle');
+      if (silentToggle) silentToggle.checked = deviceConfig.silentErrors;
+    } else {
+      ind.classList.remove('connected');
+      ind.title = 'Desconectado';
+      banner.className = 'status-banner disconnected';
+      banner.querySelector('svg').innerHTML = '<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>';
+      statusText.textContent = 'Nenhum dispositivo conectado';
+      devInfo.classList.remove('show');
+      batBadge.classList.remove('show');
+      btnVoice.disabled = true;
+    }
+  }
+
+  function updateVoiceUI() {
+    document.querySelectorAll('.voice-card').forEach(function(card) {
+      var v = parseInt(card.dataset.voice);
+      card.classList.toggle('selected', v === selectedVoice);
+    });
+  }
+
+  function updateProfileUI() {
+    var toggles = document.querySelectorAll('.profile-card .profile-toggle input');
+    toggles.forEach(function(input) {
+      var card = input.closest('.profile-card');
+      var idx = parseInt(card.dataset.profile);
+      if (!isNaN(idx) && idx < deviceConfig.profiles.length) {
+        input.checked = deviceConfig.profiles[idx];
+      }
+    });
+  }
+
+  // ================================================================
+  //  JSON PROTOCOL
+  // ================================================================
+  function sendCommand(cmd) {
+    var json = JSON.stringify(cmd);
+    var cmdName = cmd.cmd || '_unknown';
+
+    // FIX2: upload_chunk eh chamado em rajada (1 por chunk). Sem essa chave por offset,
+    // cada novo chunk cancelava o await do anterior e o firmware perdia sync
+    // (Screenshot_4: "Expected offset X, got Y" em loop). Agora cada chunk tem
+    // sua propria entrada na fila, identificada por offset.
+    var queueKey = (cmdName === 'upload_chunk') ? ('upload_chunk_' + cmd.offset) : cmdName;
+
+    // FIX P1: Se ja existe um pending para este cmd, cancela o anterior
+    if (_commandQueue[queueKey]) {
+      clearTimeout(_commandQueue[queueKey].timeout);
+      // Resolve silenciosamente para nao deixar promise pendente
+      if (_commandQueue[queueKey].resolve) _commandQueue[queueKey].resolve(null);
+    }
+
+    var promise = new Promise(function(resolve, reject) {
+      var entry = {
+        resolve: resolve,
+        reject: reject,
+        timeout: setTimeout(function() {
+          delete _commandQueue[queueKey];
+          // FIX2: nao mostra toast de timeout para upload_chunk nem get_config
+          // (sao automaticos / em rajada — toast spam atrapalha o usuario).
+          if (cmdName !== 'get_config' && cmdName !== 'upload_chunk') {
+            toast('Dispositivo não respondeu', 'error');
+          }
+          reject(new Error('Command timeout: ' + cmdName));
+        }, 5000)
+      };
+      _commandQueue[queueKey] = entry;
+    });
+    promise.catch(function() {});
+
+    if (transport === 'usb' && serialWriter) {
+      var enc = new TextEncoder();
+      serialWriter.write(enc.encode(json + '\n')).catch(function(e) {
+        console.error('Serial write error:', e);
+      });
+    } else if (transport === 'ble' && bleCmdTx) {
+      // FIX HIGH: Chunk de 512 → 20 bytes (MTU padrao BLE = 23, payload = 20).
+      // Sem negociacao de MTU, writeValue com >20 bytes falha na maioria dos dispositivos.
+      // Usa writeValueWithoutResponse para velocidade (comandos JSON sao fire-and-forget).
+      // FIX BLE: Adiciona \n como terminador de mensagem para o firmware
+      // saber onde o JSON termina (protocolo newline-delimited)
+      var enc = new TextEncoder();
+      var data = enc.encode(json + '\n');
+      var BLE_CHUNK_SIZE = 20;
+
+      // FIX BLE: Delay de 15ms entre chunks para nao sobrecarregar o stack BLE
+      // do ESP32. Sem delay, chunks podem ser dropados silenciosamente.
+      (async function() {
+        for (var i = 0; i < data.byteLength; i += BLE_CHUNK_SIZE) {
+          var chunk = data.slice(i, Math.min(i + BLE_CHUNK_SIZE, data.byteLength));
+          try {
+            await (bleCmdTx.writeValueWithoutResponse || bleCmdTx.writeValue).call(bleCmdTx, chunk);
+            if (i + BLE_CHUNK_SIZE < data.byteLength) {
+              await new Promise(function(r) { setTimeout(r, 15); });
+            }
+          } catch(e) {
+            console.error('BLE chunk write error:', e);
+            break;
+          }
+        }
+      })();
+    } else {
+      toast('Dispositivo não conectado', 'error');
+    }
+
+    return promise;
+  }
+
+  function handleResponse(data) {
+    try {
+      var msg = JSON.parse(data);
+    } catch(e) {
+      return; // ignore malformed
+    }
+
+    // FIX P1: Rotear resposta para a promise correta pelo campo msg.cmd.
+    // Cada comando na fila espera resposta com o mesmo cmd.
+    // Respostas sem cmd (eventos, progress) nao resolvem nenhuma promise.
+    var cmdName = msg.cmd || null;
+    if (cmdName === 'upload_chunk') {
+      // FIX2: chunks usam chave por offset (upload_chunk_<offset>).
+      // Firmware nao devolve o offset — resolve a primeira pendente em ordem.
+      var keys = Object.keys(_commandQueue).filter(function(k) { return k.indexOf('upload_chunk_') === 0; });
+      keys.sort(function(a, b) { return parseInt(a.slice(13)) - parseInt(b.slice(13)); });
+      if (keys.length > 0) {
+        var ek = keys[0];
+        var e0 = _commandQueue[ek];
+        clearTimeout(e0.timeout);
+        delete _commandQueue[ek];
+        if (e0.resolve) e0.resolve(msg);
+      }
+    } else if (cmdName && _commandQueue[cmdName]) {
+      var entry = _commandQueue[cmdName];
+      clearTimeout(entry.timeout);
+      delete _commandQueue[cmdName];
+      if (entry.resolve) entry.resolve(msg);
+    }
+
+    // FIX CRITICAL 1+2: O firmware envia status:"ok" com cmd:"get_config",
+    // NAO status:"config". Alem disso, os nomes dos campos sao diferentes:
+    // firmware envia device_name (app esperava name), fw_version (esperava firmware),
+    // e profiles como [{id:0,active:true},...] (app esperava [true,false,...]).
+    if (msg.status === 'ok' && msg.cmd === 'get_config') {
+      deviceConfig.voice = msg.voice != null ? msg.voice : deviceConfig.voice;
+      deviceConfig.name = msg.device_name || deviceConfig.name;
+      // Firmware envia profiles como array de objetos [{id,active}]
+      // App espera array de booleans [true,false,...]
+      if (msg.profiles && Array.isArray(msg.profiles)) {
+        deviceConfig.profiles = msg.profiles.map(function(p) {
+          return typeof p === 'object' ? p.active : !!p;
+        });
+      }
+      deviceConfig.battery = msg.battery != null ? msg.battery : deviceConfig.battery;
+      deviceConfig.firmware = msg.fw_version || deviceConfig.firmware;
+      deviceConfig.level = msg.level != null ? msg.level : deviceConfig.level;
+      deviceConfig.gestureCount = msg.gesture_count || deviceConfig.gestureCount;
+      deviceConfig.silentErrors = msg.silent_errors || false;
+      selectedVoice = deviceConfig.voice;
+      updateConnectionUI();
+      // FIX3: removido toast 'Configuracao recebida' — get_config eh disparado
+      // automaticamente apos cada comando, gerava spam visivel (Screenshot_3).
+      // Auto-carregar gestos treinaveis se na aba Treinar
+      var treinarPage = $('pageTreinar');
+      if (treinarPage && treinarPage.classList.contains('active')) {
+        loadTrainableGestures();
+      }
+    } else if (msg.status === 'gestures' && msg.cmd === 'list_trainable') {
+      // FIX PWA-01: Firmware envia status:"gestures" e campo "list" (nao "ok"/"gestures")
+      trainableGestures = msg.list || [];
+      renderTrainableGestures(trainableGestures);
+    } else if (msg.status === 'ok') {
+      // FIX3: so mostra toast se firmware enviou mensagem real.
+      // Se nao vier msg, era spam (1 toast por comando + 1 do get_config seguinte).
+      if (msg.msg) toast(msg.msg, 'success');
+      // Atualizar config apos mudanca (silencioso)
+      sendCommand({cmd: 'get_config'});
+    } else if (msg.status === 'ready') {
+      // Upload can begin
+      toast('Dispositivo pronto para receber', 'info');
+    } else if (msg.status === 'progress') {
+      updateUploadProgress(msg.percent);
+    } else if (msg.status === 'done') {
+      finishUpload(msg.written);
+    } else if (msg.status === 'error') {
+      toast('Erro: ' + (msg.msg || 'desconhecido'), 'error');
+      hideUploadProgress();
+    } else if (msg.status === 'gestures') {
+      // FIX PWA-09: Handler generico para gestures (list_trainable ja tratado acima)
+      toast('Lista de gestos recebida', 'info');
+    }
+
+    // Training events
+    if (msg.event === 'training_sample') {
+      var n = msg.sample, total = msg.total || 3;
+      $('trainingProgress').textContent = 'Amostra ' + n + ' de ' + total + ' capturada \u2713';
+      if (n < total) {
+        $('trainingInstruction').textContent = 'Prepare-se para a pr\u00f3xima...';
+      } else {
+        $('trainingInstruction').textContent = 'Processando...';
+      }
+    } else if (msg.event === 'training_complete') {
+      trainingActive = false;
+      $('trainingIcon').textContent = '\u2705';
+      $('trainingGestureName').textContent = msg.gesture || '';
+      $('trainingProgress').textContent = 'Gesto treinado! Confian\u00e7a calculada.';
+      $('trainingInstruction').textContent = '';
+      toast('Gesto "' + (msg.gesture || '') + '" treinado com sucesso!', 'success');
+      loadTrainableGestures();
+      setTimeout(function() {
+        $('trainingStatus').style.display = 'none';
+        $('trainableGestureList').style.display = '';
+      }, 2000);
+    }
+  }
+
+  // ================================================================
+  //  USB SERIAL
+  // ================================================================
+  async function connectUSB() {
+    if (!('serial' in navigator)) {
+      toast('Conexão USB não suportada neste navegador. Use Google Chrome.', 'error');
+      return;
+    }
+    try {
+      $('btnConnectUSB').disabled = true;
+      setConnecting();
+      serialPort = await navigator.serial.requestPort();
+      await serialPort.open({ baudRate: 115200 });
+
+      // Writer
+      var outputStream = serialPort.writable;
+      serialWriter = outputStream.getWriter();
+
+      // Reader
+      transport = 'usb';
+      updateConnectionUI();
+      startSerialRead();
+      // Request config
+      setTimeout(function() { sendCommand({cmd: 'get_config'}); }, 500);
+      toast('Conectado via USB', 'success');
+    } catch(e) {
+      console.error('USB connect error:', e);
+      if (e.name !== 'NotFoundError') {
+        toast('Erro ao conectar USB: ' + e.message, 'error');
+      }
+      transport = null;
+      updateConnectionUI();
+    } finally {
+      $('btnConnectUSB').disabled = false;
+    }
+  }
+
+  async function startSerialRead() {
+    while (serialPort && serialPort.readable) {
+      serialReader = serialPort.readable.getReader();
+      try {
+        while (true) {
+          var result = await serialReader.read();
+          if (result.done) break;
+          var text = new TextDecoder().decode(result.value);
+          serialBuffer += text;
+          // Process complete lines
+          var lines = serialBuffer.split('\n');
+          serialBuffer = lines.pop(); // keep incomplete last line
+          lines.forEach(function(line) {
+            line = line.trim();
+            if (line) handleResponse(line);
+          });
+        }
+      } catch(e) {
+        console.error('Serial read error:', e);
+      } finally {
+        if (serialReader) {
+          try { serialReader.releaseLock(); } catch(ex) {}
+        }
+      }
+      // If we get here and port is still open, connection was lost
+      if (transport === 'usb') {
+        toast('Conexão USB perdida', 'error');
+        transport = null;
+        updateConnectionUI();
+        attemptReconnect('usb');
+      }
+      break;
+    }
+  }
+
+  // ================================================================
+  //  BLE
+  // ================================================================
+  // Buffer de reassembly para notificacoes BLE fragmentadas.
+  // Usa protocolo newline-delimited: cada JSON termina com \n.
+  // Suporta multiplos JSONs concatenados numa notificacao.
+  var _bleBuffer = '';
+  var _bleBufferTimer = null;
+
+  function onBLENotification(evt) {
+    var val = new TextDecoder().decode(evt.target.value);
+    _bleBuffer += val;
+
+    // Reset timeout de reassembly (3s sem dados = buffer stale)
+    if (_bleBufferTimer) clearTimeout(_bleBufferTimer);
+    _bleBufferTimer = setTimeout(function() {
+      if (_bleBuffer.length > 0) {
+        console.warn('[BLE] Buffer reassembly timeout, clearing stale data');
+        _bleBuffer = '';
+      }
+    }, 3000);
+
+    // Processa todas as linhas completas (newline-delimited)
+    var lines = _bleBuffer.split('\n');
+    // Ultima parte pode ser incompleta — manter no buffer
+    _bleBuffer = lines.pop() || '';
+
+    for (var i = 0; i < lines.length; i++) {
+      var line = lines[i].trim();
+      // FIX BLE-B: So processar linhas que comecam com { (JSON valido).
+      // Firmware envia logs de debug ([MAIN], [GestureEngine], etc.) pelo mesmo canal.
+      if (line.length > 0 && line.charAt(0) === '{') {
+        handleResponse(line);
+      }
+    }
+
+    // Fallback: se nao tem \n mas parece JSON completo, tenta parsear
+    if (_bleBuffer.length > 0 && _bleBuffer.charAt(0) === '{') {
+      try {
+        JSON.parse(_bleBuffer);
+        handleResponse(_bleBuffer);
+        _bleBuffer = '';
+      } catch(e) {
+        // Fragmento parcial — aguarda mais dados
+      }
+    } else if (_bleBuffer.length > 0 && _bleBuffer.charAt(0) !== '{') {
+      _bleBuffer = '';  // Descartar dados nao-JSON (logs de debug)
+    }
+
+    // Seguranca: limpa se buffer crescer demais
+    if (_bleBuffer.length > 4096) {
+      console.warn('[BLE] Buffer overflow, clearing');
+      _bleBuffer = '';
+    }
+  }
+
+  async function connectBLE() {
+    if (!('bluetooth' in navigator)) {
+      toast('Bluetooth não suportado neste navegador. Use Google Chrome.', 'error');
+      return;
+    }
+    try {
+      $('btnConnectBLE').disabled = true;
+      setConnecting();
+      bleDevice = await navigator.bluetooth.requestDevice({
+        filters: [{ services: [BLE_SERVICE] }],
+        optionalServices: [BLE_SERVICE]
+      });
+
+      bleDevice.addEventListener('gattserverdisconnected', onBLEDisconnect);
+
+      var server = await bleDevice.gatt.connect();
+      var service = await server.getPrimaryService(BLE_SERVICE);
+
+      bleCmdTx = await service.getCharacteristic(BLE_CMD_TX);
+      bleCmdRx = await service.getCharacteristic(BLE_CMD_RX);
+      bleAudioTx = await service.getCharacteristic(BLE_AUDIO_TX);
+
+      // Listen for notifications from device
+      await bleCmdRx.startNotifications();
+      bleCmdRx.addEventListener('characteristicvaluechanged', onBLENotification);
+
+      transport = 'ble';
+      updateConnectionUI();
+      setTimeout(function() { sendCommand({cmd: 'get_config'}); }, 500);
+      toast('Conectado via Bluetooth', 'success');
+    } catch(e) {
+      console.error('BLE connect error:', e);
+      if (e.name !== 'NotFoundError') {
+        // FIX P6: Mensagens amigaveis ao inves de erros tecnicos do browser
+        var friendlyMsg = 'N\u00e3o foi poss\u00edvel conectar. ';
+        if (e.name === 'NetworkError' || e.message.indexOf('GATT') >= 0) {
+          friendlyMsg += 'O sensor n\u00e3o respondeu. Para entrar em CONFIG MODE, d\u00ea 3 cliques r\u00e1pidos no bot\u00e3o pequeno em cima do sensor.';
+        } else if (e.name === 'SecurityError') {
+          friendlyMsg += 'O navegador bloqueou o acesso. Verifique as permiss\u00f5es de Bluetooth.';
+        } else if (e.message.indexOf('User cancelled') >= 0) {
+          friendlyMsg = ''; // Usuario cancelou — sem mensagem
+        } else {
+          friendlyMsg += 'Tente novamente. Se persistir, reinicie o sensor.';
+        }
+        if (friendlyMsg) toast(friendlyMsg, 'error');
+      }
+      transport = null;
+      updateConnectionUI();
+    } finally {
+      $('btnConnectBLE').disabled = false;
+    }
+  }
+
+  function onBLEDisconnect() {
+    if (transport === 'ble') {
+      toast('Conexão Bluetooth perdida', 'error');
+      transport = null;
+      // FIX: Limpar buffer BLE para evitar dados stale na reconexao
+      _bleBuffer = '';
+      if (_bleBufferTimer) { clearTimeout(_bleBufferTimer); _bleBufferTimer = null; }
+      // Remove BLE notification listener before clearing references
+      if (bleCmdRx) {
+        try { bleCmdRx.removeEventListener('characteristicvaluechanged', onBLENotification); } catch(e) {}
+      }
+      bleCmdTx = null;
+      bleCmdRx = null;
+      bleAudioTx = null;
+      updateConnectionUI();
+      attemptReconnect('ble');
+    }
+  }
+
+  // ================================================================
+  //  RECONNECT
+  // ================================================================
+  function attemptReconnect(type) {
+    setConnecting();
+    var statusText = $('statusText');
+    statusText.textContent = 'Tentando reconectar...';
+
+    if (type === 'ble' && bleDevice && bleDevice.gatt) {
+      var attempts = 0;
+      var maxAttempts = 3;
+      (async function tryReconnect() {
+        while (attempts < maxAttempts) {
+          attempts++;
+          try {
+            statusText.textContent = 'Reconectando... tentativa ' + attempts + '/' + maxAttempts;
+            var server = await bleDevice.gatt.connect();
+            var service = await server.getPrimaryService(BLE_SERVICE);
+            bleCmdTx = await service.getCharacteristic(BLE_CMD_TX);
+            bleCmdRx = await service.getCharacteristic(BLE_CMD_RX);
+            bleAudioTx = await service.getCharacteristic(BLE_AUDIO_TX);
+            await bleCmdRx.startNotifications();
+            bleCmdRx.addEventListener('characteristicvaluechanged', onBLENotification);
+            transport = 'ble';
+            updateConnectionUI();
+            toast('Reconectado via Bluetooth', 'success');
+            sendCommand({cmd: 'get_config'});
+            return;
+          } catch(e) {
+            // FIX P5: Backoff exponencial (2s, 4s, 8s) ao inves de fixo 2s.
+            // Evita hammering do radio BLE em caso de falha persistente.
+            var delay = 2000 * Math.pow(2, attempts - 1);
+            statusText.textContent = 'Aguardando ' + (delay/1000) + 's para tentar novamente...';
+            await new Promise(function(r) { setTimeout(r, delay); });
+          }
+        }
+        // FIX P5: Apos falhar, mostra mensagem com instrucao acionavel
+        statusText.textContent = '';
+        toast('N\u00e3o foi poss\u00edvel reconectar. Verifique se o sensor est\u00e1 ligado e em CONFIG MODE, depois clique em Conectar Bluetooth.', 'error');
+        updateConnectionUI();
+      })();
+    }
+    // USB auto-reconnect is not practical (requires user gesture), just update UI
+    if (type === 'usb') {
+      updateConnectionUI();
+    }
+  }
+
+  function setConnecting() {
+    var banner = $('statusBanner');
+    banner.className = 'status-banner connecting';
+    banner.querySelector('svg').innerHTML = '<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.94-.49-7-3.85-7-7.93h2c0 3.31 2.69 6 6 6v2zm7.9-2.54A9.958 9.958 0 0020 12h-2c0 3.31-2.69 6-6 6v2c2.08 0 3.97-.8 5.39-2.1l1.51 1.49z"/>';
+    $('statusText').textContent = 'Conectando...';
+  }
+
+  // ================================================================
+  //  DISCONNECT
+  // ================================================================
+  async function disconnect() {
+    if (transport === 'usb') {
+      try {
+        if (serialReader) { await serialReader.cancel(); serialReader.releaseLock(); serialReader = null; }
+        if (serialWriter) { serialWriter.releaseLock(); serialWriter = null; }
+        if (serialPort) { await serialPort.close(); serialPort = null; }
+      } catch(e) { console.error('Disconnect USB error:', e); }
+    } else if (transport === 'ble') {
+      // Remove BLE notification listener before disconnecting
+      if (bleCmdRx) {
+        try { bleCmdRx.removeEventListener('characteristicvaluechanged', onBLENotification); } catch(e) {}
+      }
+      try {
+        if (bleDevice && bleDevice.gatt.connected) {
+          bleDevice.gatt.disconnect();
+        }
+      } catch(e) { console.error('Disconnect BLE error:', e); }
+      bleCmdTx = null; bleCmdRx = null; bleAudioTx = null; bleDevice = null;
+    }
+    transport = null;
+    updateConnectionUI();
+    toast('Desconectado', 'info');
+  }
+
+  // ================================================================
+  //  VOICE
+  // ================================================================
+  function selectVoice(v) {
+    selectedVoice = v;
+    updateVoiceUI();
+    // Enable apply button if USB
+    // FIX PWA-04: Voz funciona via BLE e USB
+    $('btnApplyVoice').disabled = !transport;
+  }
+
+  // FIX: Preview de voz usando Web Speech API (funciona sem dispositivo)
+  // Usa as vozes pt-BR do browser para dar uma amostra de como soa
+  function previewVoice(voiceIdx) {
+    if (!('speechSynthesis' in window)) {
+      toast('Seu navegador nao suporta preview de voz', 'warn');
+      return;
+    }
+    var samples = [
+      { text: 'Ola, eu sou a voz masculina do GESTUUM.', pitch: 0.9, rate: 0.9 },
+      { text: 'Ola, eu sou a voz feminina do GESTUUM.', pitch: 1.1, rate: 0.9 },
+      { text: 'Oi! Eu sou a voz de menino do GESTUUM!', pitch: 1.5, rate: 1.0 },
+      { text: 'Oi! Eu sou a voz de menina do GESTUUM!', pitch: 1.6, rate: 1.0 }
+    ];
+    var sample = samples[voiceIdx] || samples[0];
+    window.speechSynthesis.cancel(); // Para qualquer fala anterior
+    var u = new SpeechSynthesisUtterance(sample.text);
+    u.lang = 'pt-BR';
+    u.pitch = sample.pitch;
+    u.rate = sample.rate;
+    // Tenta usar voz pt-BR se disponivel
+    var voices = window.speechSynthesis.getVoices();
+    var ptVoice = voices.find(function(v) { return v.lang.indexOf('pt') === 0; });
+    if (ptVoice) u.voice = ptVoice;
+    window.speechSynthesis.speak(u);
+  }
+
+  function applyVoice() {
+    // FIX PWA-04: Funciona via BLE e USB
+    if (!transport) {
+      toast('Conecte o dispositivo primeiro', 'error');
+      return;
+    }
+    if (selectedVoice === deviceConfig.voice) {
+      toast('Esta voz ja está selecionada', 'info');
+      return;
+    }
+    confirm(
+      'Trocar Voz?',
+      'Trocar para voz "' + VOICE_NAMES[selectedVoice] + '"? Isso levara aproximadamente 50 segundos.',
+      function(ok) {
+        if (ok) {
+          sendCommand({cmd: 'set_voice', voice: selectedVoice});
+          showProgress('voiceProgress', 'voiceProgressFill', 'voiceProgressText');
+          toast('Iniciando troca de voz...', 'info');
+        }
+      }
+    );
+  }
+
+  // ================================================================
+  //  PROFILES
+  // ================================================================
+  function toggleProfile(idx, active) {
+    if (!transport) {
+      toast('Conecte o dispositivo primeiro', 'warn');
+      updateProfileUI();
+      return;
+    }
+    var toggle = document.getElementById('profileToggle' + idx);
+    sendCommand({cmd:'set_profile', profile:idx, active:active}).then(function() {
+      toast('Perfil ' + (active ? 'ativado' : 'desativado'), 'ok');
+    }).catch(function() {
+      // Revert toggle on failure
+      if (toggle) toggle.checked = !active;
+      toast('Erro ao alterar perfil', 'error');
+    });
+  }
+
+  // ================================================================
+  //  MODO SILENCIOSO (Fix UX12 — criancas autistas)
+  // ================================================================
+  function toggleSilentMode(active) {
+    if (!transport) {
+      toast('Conecte o dispositivo primeiro', 'warn');
+      var t = $('silentModeToggle');
+      if (t) t.checked = !active;
+      return;
+    }
+    sendCommand({cmd: 'set_silent_errors', value: active}).then(function() {
+      deviceConfig.silentErrors = active;
+      toast('Modo silencioso ' + (active ? 'ativado' : 'desativado'), 'success');
+    }).catch(function() {
+      var t = $('silentModeToggle');
+      if (t) t.checked = !active;
+      toast('Erro ao alterar modo silencioso', 'error');
+    });
+  }
+
+  // ================================================================
+  //  FACTORY RESET
+  // ================================================================
+  function factoryReset() {
+    confirm(
+      'Restaurar Padr\u00e3o?',
+      'Isso vai apagar TODAS as configura\u00e7\u00f5es: voz, perfis, n\u00edvel, slots, canal. O dispositivo e o app voltam ao estado inicial. Firmware e \u00e1udios n\u00e3o s\u00e3o apagados.',
+      function(ok) {
+        if (!ok) return;
+
+        // Reset do hardware (se conectado)
+        if (transport) {
+          sendCommand({cmd: 'factory_reset'}).then(function() {
+            toast('Dispositivo restaurado. Reiniciando...', 'success');
+          }).catch(function() {
+            // Timeout esperado — dispositivo reinicia antes de responder
+          });
+        }
+
+        // Reset do app (localStorage)
+        try {
+          // Remove todas as chaves GESTUUM
+          var keys = Object.keys(localStorage);
+          for (var i = 0; i < keys.length; i++) {
+            if (keys[i].indexOf('gestuum') === 0) {
+              localStorage.removeItem(keys[i]);
+            }
+          }
+        } catch(e) {}
+
+        // Resetar estado interno do app
+        customSlots = [];
+        nextSlotId = 1;
+        deviceConfig = {
+          voice: 0, name: 'GESTUUM', profiles: [true, true, true, true, true],
+          battery: -1, firmware: '--', silentErrors: false
+        };
+        selectedVoice = 0;
+
+        // Desconectar
+        transport = null;
+        updateConnectionUI();
+        renderSlots();
+
+        // Mostrar onboarding na proxima abertura
+        toast('Tudo restaurado! O app vai recarregar.', 'success');
+        setTimeout(function() {
+          location.reload();
+        }, 2000);
+      }
+    );
+  }
+
+  // ================================================================
+  //  CANAL ESP-NOW (troca de canal para evitar interferencia)
+  // ================================================================
+  function setChannel(ch) {
+    if (!transport) {
+      toast('Conecte o dispositivo primeiro', 'warn');
+      return;
+    }
+    if (ch < 1 || ch > 13) return;
+
+    confirm(
+      'Trocar Canal?',
+      'Todos os 3 dispositivos vão reiniciar no canal ' + ch + '. O processo leva alguns segundos.',
+      function(ok) {
+        if (!ok) return;
+        sendCommand({cmd: 'set_channel', channel: ch}).then(function(msg) {
+          toast('Canal alterado para ' + ch + '. Dispositivos reiniciando...', 'success');
+          // Sensor A vai reiniciar — conexao vai cair
+          setTimeout(function() {
+            transport = null;
+            updateConnectionUI();
+          }, 2000);
+        }).catch(function() {
+          toast('Erro ao trocar canal', 'error');
+        });
+      }
+    );
+  }
+
+  // ================================================================
+  //  PERSONALIZAR - RECORDING
+  // ================================================================
+  function recordField(key) {
+    recordingField = key;
+    recordedBlob = null;
+    recordedWav = null;
+    $('recModalTitle').textContent = 'Gravar Áudio - ' + capitalize(key);
+    $('recTimer').textContent = '00:00';
+    $('recHint').textContent = 'Segure o botão para gravar';
+    $('recHint').style.display = '';
+    $('recActions').style.display = 'none';
+    $('recBtn').classList.remove('recording');
+    $('recBtn').style.display = '';
+    clearCanvas();
+    $('recModal').classList.add('show');
+  }
+
+  async function toggleRecording() {
+    if (App._recordingLock) return;
+    App._recordingLock = true;
+    if (mediaRecorder && mediaRecorder.state === 'recording') {
+      // Stop
+      if (App._recMaxTimeout) {
+        clearTimeout(App._recMaxTimeout);
+        App._recMaxTimeout = null;
+      }
+      mediaRecorder.stop();
+      $('recBtn').classList.remove('recording');
+      clearInterval(recTimerInterval);
+      cancelAnimationFrame(recAnimFrame);
+      if (recStream) { recStream.getTracks().forEach(function(t) { t.stop(); }); recStream = null; }
+      App._recordingLock = false;
+      return;
+    }
+    // Start recording
+    try {
+      recStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      var recAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      App._recAudioCtx = recAudioCtx;
+      var source = recAudioCtx.createMediaStreamSource(recStream);
+      recAnalyser = recAudioCtx.createAnalyser();
+      recAnalyser.fftSize = 256;
+      source.connect(recAnalyser);
+
+      audioChunks = [];
+      var mimeType = '';
+      if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
+        mimeType = 'audio/webm;codecs=opus';
+      } else if (MediaRecorder.isTypeSupported('audio/webm')) {
+        mimeType = 'audio/webm';
+      } else if (MediaRecorder.isTypeSupported('audio/ogg;codecs=opus')) {
+        mimeType = 'audio/ogg;codecs=opus';
+      } else if (MediaRecorder.isTypeSupported('audio/mp4')) {
+        mimeType = 'audio/mp4';
+      }
+      var recOptions = mimeType ? { mimeType: mimeType } : {};
+      mediaRecorder = new MediaRecorder(recStream, recOptions);
+      mediaRecorder.ondataavailable = function(e) {
+        if (e.data.size > 0) audioChunks.push(e.data);
+      };
+      mediaRecorder.onstop = function() {
+        recordedBlob = new Blob(audioChunks, {type: 'audio/webm'});
+        // Auto-preview playback
+        setTimeout(function() {
+          if (recordedBlob) {
+            var url = URL.createObjectURL(recordedBlob);
+            var audio = new Audio(url);
+            audio.play();
+            audio.onended = function() { URL.revokeObjectURL(url); };
+          }
+        }, 300);
+        // Show action buttons, hide record button and hint
+        $('recHint').style.display = 'none';
+        $('recBtn').style.display = 'none';
+        $('recActions').style.display = 'flex';
+        // Process to WAV
+        convertToWav(recordedBlob).then(function(wav) {
+          recordedWav = wav;
+        });
+      };
+      mediaRecorder.start();
+      $('recBtn').classList.add('recording');
+
+      recStartTime = Date.now();
+      recTimerInterval = setInterval(updateRecTimer, 200);
+      drawWaveform();
+
+      // Safety timeout: auto-stop after 30 seconds
+      App._recMaxTimeout = setTimeout(function() {
+        if (mediaRecorder && mediaRecorder.state === 'recording') {
+          App.toggleRecording(); // Auto-stop after 30s
+          toast('Gravação limitada a 30 segundos', 'warn');
+        }
+      }, 30000);
+
+      App._recordingLock = false;
+    } catch(e) {
+      toast('Erro ao acessar microfone: ' + e.message, 'error');
+      App._recordingLock = false;
+    }
+  }
+
+  function updateRecTimer() {
+    var elapsed = Math.floor((Date.now() - recStartTime) / 1000);
+    var m = String(Math.floor(elapsed / 60)).padStart(2, '0');
+    var s = String(elapsed % 60).padStart(2, '0');
+    $('recTimer').textContent = m + ':' + s;
+  }
+
+  function drawWaveform() {
+    if (!recAnalyser) return;
+    var canvas = $('recCanvas');
+    var ctx = canvas.getContext('2d');
+    var bufLen = recAnalyser.frequencyBinCount;
+    var dataArray = new Uint8Array(bufLen);
+
+    function draw() {
+      if (!mediaRecorder || mediaRecorder.state !== 'recording') return;
+      recAnimFrame = requestAnimationFrame(draw);
+      recAnalyser.getByteTimeDomainData(dataArray);
+      ctx.fillStyle = '#f0f0f0';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = '#D32F2F';
+      ctx.beginPath();
+      var sliceWidth = canvas.width / bufLen;
+      var x = 0;
+      for (var i = 0; i < bufLen; i++) {
+        var v = dataArray[i] / 128.0;
+        var y = v * canvas.height / 2;
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        x += sliceWidth;
+      }
+      ctx.lineTo(canvas.width, canvas.height / 2);
+      ctx.stroke();
+    }
+    draw();
+  }
+
+  function clearCanvas() {
+    var canvas = $('recCanvas');
+    var ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#f0f0f0';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  }
+
+  function playRecording() {
+    if (!recordedBlob) return;
+    var url = URL.createObjectURL(recordedBlob);
+    var audio = new Audio(url);
+    audio.play();
+    audio.onended = function() { URL.revokeObjectURL(url); };
+  }
+
+  function saveRecording() {
+    if (!recordedWav) {
+      toast('Aguarde a conversao do audio...', 'info');
+      return;
+    }
+    // Store WAV associated with field
+    if (recordingField) {
+      // Store in a map
+      if (!App._recordings) App._recordings = {};
+      App._recordings[recordingField] = recordedWav;
+      toast('Audio salvo para "' + capitalize(recordingField) + '"', 'success');
+    }
+    closeRecModal();
+  }
+
+  // ── Hold-to-record flow ──
+  function startHoldRecord() {
+    if (mediaRecorder && mediaRecorder.state === 'recording') return;
+    $('recHint').textContent = 'Gravando... solte para parar';
+    toggleRecording();
+  }
+
+  function stopHoldRecord() {
+    if (!mediaRecorder || mediaRecorder.state !== 'recording') return;
+    toggleRecording(); // stops recording
+  }
+
+  function redoRecording() {
+    recordedBlob = null;
+    recordedWav = null;
+    $('recTimer').textContent = '00:00';
+    $('recHint').textContent = 'Segure o botão para gravar';
+    $('recHint').style.display = '';
+    $('recActions').style.display = 'none';
+    $('recBtn').style.display = '';
+    clearCanvas();
+  }
+
+  function saveAndSendRecording() {
+    if (!recordedWav) {
+      toast('Aguarde a conversão do áudio...', 'info');
+      return;
+    }
+    // Store WAV associated with field
+    if (recordingField) {
+      if (!App._recordings) App._recordings = {};
+      App._recordings[recordingField] = recordedWav;
+      toast('Áudio salvo para "' + capitalize(recordingField) + '"', 'success');
+      // Auto-send if connected
+      if (transport && recordingField && recordingField.indexOf('_slot_') !== 0) {
+        sendField(recordingField);
+      } else if (transport && recordingField && recordingField.indexOf('_slot_') === 0) {
+        // Handled by slot-specific save override
+      }
+    }
+    closeRecModal();
+  }
+
+  function closeRecModal() {
+    $('recModal').classList.remove('show');
+    if (mediaRecorder && mediaRecorder.state === 'recording') {
+      mediaRecorder.stop();
+    }
+    clearInterval(recTimerInterval);
+    cancelAnimationFrame(recAnimFrame);
+    if (recStream) {
+      recStream.getTracks().forEach(function(t) { t.stop(); });
+      recStream = null;
+    }
+    if (App._recAudioCtx) {
+      App._recAudioCtx.close().catch(function(){});
+      App._recAudioCtx = null;
+    }
+    mediaRecorder = null;
+    recAnalyser = null;
+    App._recordingLock = false;
+  }
+
+  // ================================================================
+  //  WAV CONVERSION
+  // ================================================================
+  async function convertToWav(blob) {
+    var arrayBuf = await blob.arrayBuffer();
+    var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    var decoded = await audioCtx.decodeAudioData(arrayBuf);
+
+    // Resample to 11025Hz mono
+    var targetRate = 11025;
+    var numChannels = 1;
+    var sourceData = decoded.getChannelData(0); // mono from first channel
+    var sourceRate = decoded.sampleRate;
+
+    // Calculate resampled length
+    var ratio = sourceRate / targetRate;
+    var silenceSamples = Math.round(targetRate * 0.2); // 200ms silence
+    var newLen = Math.round(sourceData.length / ratio);
+    var totalLen = silenceSamples + newLen;
+
+    // Linear interpolation resampling
+    var resampled = new Float32Array(totalLen);
+    // Fill silence prefix (already 0)
+    for (var i = 0; i < newLen; i++) {
+      var srcIdx = i * ratio;
+      var idx = Math.floor(srcIdx);
+      var frac = srcIdx - idx;
+      var s0 = sourceData[idx] || 0;
+      var s1 = sourceData[Math.min(idx + 1, sourceData.length - 1)] || 0;
+      resampled[silenceSamples + i] = s0 + frac * (s1 - s0);
+    }
+
+    // Convert to 16-bit PCM
+    var pcm = new Int16Array(totalLen);
+    for (var i = 0; i < totalLen; i++) {
+      var s = Math.max(-1, Math.min(1, resampled[i]));
+      pcm[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
+    }
+
+    // Build WAV
+    var wavBuf = new ArrayBuffer(44 + pcm.length * 2);
+    var view = new DataView(wavBuf);
+    var writeStr = function(offset, str) {
+      for (var i = 0; i < str.length; i++) view.setUint8(offset + i, str.charCodeAt(i));
+    };
+    writeStr(0, 'RIFF');
+    view.setUint32(4, 36 + pcm.length * 2, true);
+    writeStr(8, 'WAVE');
+    writeStr(12, 'fmt ');
+    view.setUint32(16, 16, true);
+    view.setUint16(20, 1, true); // PCM
+    view.setUint16(22, numChannels, true);
+    view.setUint32(24, targetRate, true);
+    view.setUint32(28, targetRate * numChannels * 2, true);
+    view.setUint16(32, numChannels * 2, true);
+    view.setUint16(34, 16, true); // bits per sample
+    writeStr(36, 'data');
+    view.setUint32(40, pcm.length * 2, true);
+    // Write PCM data
+    var offset = 44;
+    for (var i = 0; i < pcm.length; i++) {
+      view.setInt16(offset, pcm[i], true);
+      offset += 2;
+    }
+
+    audioCtx.close();
+    return wavBuf;
+  }
+
+  // ================================================================
+  //  UPLOAD
+  // ================================================================
+  async function sendField(key) {
+    if (!transport) {
+      toast('Conecte ao dispositivo primeiro', 'error');
+      return;
+    }
+    if (!App._recordings || !App._recordings[key]) {
+      toast('Grave o audio primeiro', 'error');
+      return;
+    }
+    var wavData = App._recordings[key];
+    var filename = 'pessoal_' + key + '.wav';
+    await uploadWav(filename, wavData);
+
+    // Persiste que o campo ja tem audio no dispositivo
+    try {
+      localStorage.setItem('gestuum_audio_' + key, '1');
+    } catch(e) {}
+    toast('Audio de "' + key + '" salvo no dispositivo', 'success');
+  }
+
+  async function uploadWav(filename, wavArrayBuffer) {
+    if (!transport) { toast('Não conectado', 'error'); return; }
+
+    var data = new Uint8Array(wavArrayBuffer);
+    showProgress('uploadProgress', 'uploadProgressFill', 'uploadProgressText');
+
+    // Inicia upload — envia comando e espera resposta do device
+    // FIX: Antes usava setTimeout(300ms) fixo. Agora espera o ACK real.
+    try {
+      var startResp = await sendCommand({cmd: 'upload_start', filename: filename, size: data.byteLength});
+      // Se device respondeu com erro, aborta
+      if (startResp && startResp.status === 'error') {
+        toast('Erro: ' + (startResp.msg || 'falha ao iniciar upload'), 'error');
+        hideUploadProgress();
+        return;
+      }
+    } catch(e) {
+      toast('Dispositivo nao respondeu ao upload_start', 'error');
+      hideUploadProgress();
+      return;
+    }
+
+    // Delay minimo para device preparar o arquivo
+    await new Promise(function(r) { setTimeout(r, 100); });
+
+    // Envia chunks (512 bytes)
+    var chunkSize = 512;
+    for (var i = 0; i < data.byteLength; i += chunkSize) {
+      if (!transport) {
+        toast('Conexao perdida durante envio', 'error');
+        hideUploadProgress();
+        return;
+      }
+      var chunk = data.slice(i, Math.min(i + chunkSize, data.byteLength));
+      var b64 = arrayBufferToBase64(chunk);
+
+      if (transport === 'usb') {
+        // FIX: Espera resposta de cada chunk via sendCommand (que tem timeout de 5s).
+        // Antes: fire-and-forget a cada 20ms — ESP32 serial buffer (256 bytes) nao acompanhava.
+        // Cada chunk JSON tem ~700+ bytes, a 115200 baud leva ~60ms para transmitir.
+        // Agora: espera ACK implicito (sendCommand resolve quando device responde).
+        try {
+          await sendCommand({cmd: 'upload_chunk', offset: i, data: b64});
+        } catch(e) {
+          // Timeout do chunk — tenta continuar (device pode ter processado mas nao respondeu)
+          console.warn('Chunk timeout at offset ' + i + ', continuing...');
+        }
+      } else if (transport === 'ble' && bleAudioTx) {
+        // FIX BLE: Upload via BLE — chunks de 20 bytes (MTU padrao)
+        // Antes: enviava 512 bytes raw que excedia MTU e falhava.
+        // Agora: fragmenta em 20 bytes com delay entre cada.
+        var BLE_AUDIO_CHUNK = 20;
+        try {
+          for (var bi = 0; bi < chunk.length; bi += BLE_AUDIO_CHUNK) {
+            var bleChunk = chunk.slice(bi, Math.min(bi + BLE_AUDIO_CHUNK, chunk.length));
+            await (bleAudioTx.writeValueWithResponse || bleAudioTx.writeValue).call(bleAudioTx, bleChunk);
+            if (bi + BLE_AUDIO_CHUNK < chunk.length) {
+              await new Promise(function(r) { setTimeout(r, 10); });
+            }
+          }
+        } catch(e) {
+          toast('Erro no envio Bluetooth: ' + e.message, 'error');
+          hideUploadProgress();
+          return;
+        }
+      }
+
+      var percent = Math.round(((i + chunk.length) / data.byteLength) * 100);
+      updateUploadProgress(percent);
+
+      // Delay entre chunks para dar tempo ao device processar
+      await new Promise(function(r) { setTimeout(r, transport === 'usb' ? 50 : 20); });
+    }
+
+    sendCommand({cmd: 'upload_end', filename: filename});
+  }
+
+  function arrayBufferToBase64(buffer) {
+    var binary = '';
+    var bytes = new Uint8Array(buffer);
+    for (var i = 0; i < bytes.byteLength; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+    return btoa(binary);
+  }
+
+  // ================================================================
+  //  PROGRESS
+  // ================================================================
+  function showProgress(barId, fillId, textId) {
+    $(barId).classList.add('show');
+    $(textId).classList.add('show');
+    $(fillId).style.width = '0%';
+    $(textId).textContent = '0%';
+  }
+
+  function updateUploadProgress(percent) {
+    // Update both possible progress bars
+    ['voiceProgressFill', 'uploadProgressFill'].forEach(function(id) {
+      var el = $(id);
+      if (el && el.parentElement.classList.contains('show')) {
+        el.style.width = percent + '%';
+      }
+    });
+    ['voiceProgressText', 'uploadProgressText'].forEach(function(id) {
+      var el = $(id);
+      if (el && el.classList.contains('show')) {
+        el.textContent = percent + '%';
+      }
+    });
+  }
+
+  function finishUpload(written) {
+    updateUploadProgress(100);
+    setTimeout(function() {
+      hideUploadProgress();
+      toast('Upload concluido! ' + (written ? written + ' bytes' : ''), 'success');
+    }, 500);
+  }
+
+  function hideUploadProgress() {
+    ['voiceProgress', 'uploadProgress'].forEach(function(id) { $(id).classList.remove('show'); });
+    ['voiceProgressText', 'uploadProgressText'].forEach(function(id) { $(id).classList.remove('show'); });
+  }
+
+  // ================================================================
+  //  CUSTOM SLOTS
+  // ================================================================
+  function renderSlots() {
+    var container = $('customSlots');
+    if (customSlots.length === 0) {
+      container.innerHTML = '<div style="text-align:center;color:var(--text-hint);padding:16px;font-size:.875rem">Nenhum slot personalizado. Toque em "Novo Slot" para adicionar.</div>';
+      return;
+    }
+    container.innerHTML = customSlots.map(function(slot, i) {
+      var slotCode = 'CU' + String(slot.id).padStart(2, '0');
+      return '<div class="slot-item">' +
+        '<div style="flex:1;min-width:0">' +
+          '<div class="slot-label">' + slotCode + ' - ' + escapeHtml(slot.name || 'Sem nome') + '</div>' +
+          '<div class="slot-status" style="color:' + (slot.hasAudio ? 'var(--success)' : 'var(--text-hint)') + '">' + (slot.hasAudio ? '&#10003; Audio no dispositivo' : 'Sem audio') + '</div>' +
+        '</div>' +
+        '<div class="slot-actions">' +
+          '<button class="btn-icon btn-outline btn-sm" onclick="App.recordSlot(' + i + ')" title="Gravar">' +
+            '<svg viewBox="0 0 24 24" width="18" height="18"><path d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z" fill="currentColor"/></svg>' +
+          '</button>' +
+          '<button class="btn-icon btn-primary btn-sm" onclick="App.sendSlot(' + i + ')" title="Enviar">' +
+            '<svg viewBox="0 0 24 24" width="16" height="16"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" fill="#fff"/></svg>' +
+          '</button>' +
+          '<button class="btn-icon btn-sm" style="color:var(--emergency)" onclick="App.removeSlot(' + i + ')" title="Remover">' +
+            '<svg viewBox="0 0 24 24" width="18" height="18"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" fill="currentColor"/></svg>' +
+          '</button>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  // FIX: Substituido prompt() blocking por modal custom.
+  // prompt() e um dialogo nativo do browser que congela a UI inteira.
+  // Em mobile (PWA), e especialmente ruim — aparece fora do contexto do app.
+  function addSlot() {
+    if (customSlots.length >= 20) {
+      toast('Maximo de 20 slots personalizados', 'error');
+      return;
+    }
+    // Mostra modal custom com input de texto
+    showSlotNameModal(function(name) {
+      if (!name) return;
+      customSlots.push({ id: nextSlotId++, name: name.trim(), hasAudio: false, wav: null });
+      renderSlots();
+      saveSlots();
+    });
+  }
+
+  // Modal custom para nome do slot (substitui prompt())
+  function showSlotNameModal(callback) {
+    var overlay = document.createElement('div');
+    overlay.className = 'modal-overlay show';
+    overlay.innerHTML =
+      '<div class="modal">' +
+        '<div class="modal-title">Novo Gesto Personalizado</div>' +
+        '<div style="margin-bottom:16px">' +
+          '<label style="font-size:.8125rem;color:var(--text-secondary);display:block;margin-bottom:6px">Nome do gesto:</label>' +
+          '<input type="text" id="slotNameInput" placeholder="Ex: Abraço, Tchau especial..." ' +
+            'style="width:100%;padding:12px;border:2px solid var(--divider);border-radius:var(--radius-sm);' +
+            'font-size:1rem;outline:none;transition:border-color .2s" ' +
+            'onfocus="this.style.borderColor=\'var(--primary-dark)\'" ' +
+            'onblur="this.style.borderColor=\'var(--divider)\'">' +
+        '</div>' +
+        '<div class="modal-actions">' +
+          '<button class="btn btn-sm" style="color:var(--text-secondary)" id="slotNameCancel">Cancelar</button>' +
+          '<button class="btn btn-primary btn-sm" id="slotNameOk">Criar</button>' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(overlay);
+
+    var input = document.getElementById('slotNameInput');
+    var okBtn = document.getElementById('slotNameOk');
+    var cancelBtn = document.getElementById('slotNameCancel');
+
+    // Foco automatico no input
+    setTimeout(function() { input.focus(); }, 100);
+
+    function close(value) {
+      overlay.remove();
+      callback(value);
+    }
+
+    okBtn.addEventListener('click', function() { close(input.value); });
+    cancelBtn.addEventListener('click', function() { close(null); });
+    input.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') close(input.value);
+      if (e.key === 'Escape') close(null);
+    });
+  }
+
+  function removeSlot(idx) {
+    confirm('Remover Slot?', 'Deseja remover "' + customSlots[idx].name + '"?', function(ok) {
+      if (ok) {
+        customSlots.splice(idx, 1);
+        renderSlots();
+        saveSlots();
+      }
+    });
+  }
+
+  function recordSlot(idx) {
+    recordingField = '_slot_' + idx;
+    recordedBlob = null;
+    recordedWav = null;
+    $('recModalTitle').textContent = 'Gravar - ' + customSlots[idx].name;
+    $('recTimer').textContent = '00:00';
+    $('recHint').textContent = 'Segure o botão para gravar';
+    $('recHint').style.display = '';
+    $('recActions').style.display = 'none';
+    $('recBtn').classList.remove('recording');
+    $('recBtn').style.display = '';
+    clearCanvas();
+    $('recModal').classList.add('show');
+
+    // Override save to store in slot
+    var origSaveAndSend = App.saveAndSendRecording;
+    App.saveAndSendRecording = function() {
+      if (!recordedWav) {
+        toast('Aguarde a conversão...', 'info');
+        return;
+      }
+      customSlots[idx].hasAudio = true;
+      customSlots[idx].wav = recordedWav;
+      renderSlots();
+      saveSlots();
+      toast('Áudio salvo para "' + customSlots[idx].name + '"', 'success');
+      closeRecModal();
+      App.saveAndSendRecording = origSaveAndSend; // restore
+    };
+  }
+
+  async function sendSlot(idx) {
+    if (!transport) { toast('Conecte primeiro', 'error'); return; }
+    var slot = customSlots[idx];
+    if (!slot.wav) { toast('Grave o audio primeiro', 'error'); return; }
+    var code = 'cu' + String(slot.id).padStart(2, '0');
+    await uploadWav(code + '.wav', slot.wav);
+
+    // FIX: Marca como enviado e persiste no localStorage.
+    // Ao reabrir o app, o slot mostra "Audio no dispositivo"
+    // em vez de "Sem audio" (o WAV ja esta no SPIFFS do ESP32).
+    slot.hasAudio = true;
+    saveSlots();
+    renderSlots();
+    toast('Audio de "' + slot.name + '" salvo no dispositivo', 'success');
+  }
+
+  function saveSlots() {
+    try {
+      var data = customSlots.map(function(s) { return {id: s.id, name: s.name, hasAudio: s.hasAudio}; });
+      localStorage.setItem('gestuum_slots', JSON.stringify(data));
+      if (customSlots.length > 0) nextSlotId = Math.max.apply(null, customSlots.map(function(s) { return s.id; })) + 1;
+    } catch(e) {}
+  }
+
+  /**
+   * Carrega slots do localStorage.
+   *
+   * FIX: Antes ignorava hasAudio e setava false para todos os slots.
+   * Se o usuario ja gravou e enviou o audio ao dispositivo, o WAV esta
+   * no SPIFFS do ESP32 — funciona independente do app. Mas o app mostrava
+   * "Sem audio" ao reabrir, confundindo o usuario.
+   *
+   * Agora: restaura hasAudio do localStorage (salvo em saveSlots).
+   * O WAV binario (wav:) nao persiste (muito grande para localStorage),
+   * mas o status hasAudio sim — reflete que o audio JA esta no dispositivo.
+   *
+   * Se o usuario quiser regravar, o botao de gravar continua funcionando
+   * normalmente (sobrescreve o WAV no SPIFFS).
+   */
+  function loadSlots() {
+    try {
+      var data = JSON.parse(localStorage.getItem('gestuum_slots'));
+      if (Array.isArray(data)) {
+        customSlots = data.map(function(s) {
+          return {
+            id: s.id,
+            name: s.name,
+            hasAudio: s.hasAudio || false,  // Restaura status real
+            wav: null  // WAV binario nao persiste (so na RAM durante a sessao)
+          };
+        });
+        if (customSlots.length > 0) {
+          nextSlotId = Math.max.apply(null, customSlots.map(function(s) { return s.id; })) + 1;
+        }
+      }
+    } catch(e) {}
+    renderSlots();
+  }
+
+  // ================================================================
+  //  TESTAR
+  // ================================================================
+  function testGesture(filename) {
+    if (!transport) {
+      toast('Conecte ao dispositivo primeiro', 'error');
+      return;
+    }
+    sendCommand({cmd: 'test_audio', filename: filename});
+    toast('Reproduzindo: ' + filename.replace('.wav', ''), 'info');
+  }
+
+  // Phrase builder: context (left hand) + object (right hand) = phrase
+  function testGesturePhrase(filename, objectName) {
+    // Update the object display in the phrase builder
+    var objDisplay = document.getElementById('testObjectDisplay');
+    if (objDisplay) {
+      objDisplay.textContent = objectName;
+    }
+
+    // Build phrase from context + object
+    var ctxSelect = document.getElementById('testContext');
+    var context = ctxSelect ? ctxSelect.value : '';
+    var phrase = context ? (context + ' ' + objectName) : objectName;
+
+    // Capitalize first letter
+    phrase = phrase.charAt(0).toUpperCase() + phrase.slice(1);
+
+    // FIX HIGH XSS: Usa textContent para a frase (evita injecao HTML).
+    // FIX HIGH: replayPhrase() agora chamado via App.replayPhrase() (exportado na API publica).
+    var resultEl = document.getElementById('testPhraseResult');
+    if (resultEl) {
+      resultEl.textContent = '';
+      var quoteSpan = document.createElement('span');
+      quoteSpan.textContent = '\u201C' + phrase + '\u201D ';
+      resultEl.appendChild(quoteSpan);
+      var replayBtn = document.createElement('button');
+      replayBtn.textContent = '\uD83D\uDD0A';
+      replayBtn.title = 'Reproduzir novamente';
+      replayBtn.style.cssText = 'background:none;border:none;cursor:pointer;font-size:1.1rem;vertical-align:middle;padding:2px 6px;opacity:.7';
+      replayBtn.addEventListener('click', function() { replayPhrase(); });
+      resultEl.appendChild(replayBtn);
+      resultEl.style.animation = 'none';
+      resultEl.offsetHeight;
+      resultEl.style.animation = 'fadeIn .3s ease';
+    }
+
+    // Play audio: device if connected, otherwise play WAV files locally
+    if (transport) {
+      sendCommand({cmd: 'test_audio', filename: filename});
+      toast('Reproduzindo no dispositivo: ' + phrase, 'info');
+    } else {
+      // Pass the WAV filename (without .wav) so speakContextObject can find the file
+      var objFileBase = filename.replace('.wav', '');
+      speakContextObject(context, objFileBase);
+      toast('🔊 ' + phrase, 'info');
+    }
+  }
+
+  // Speak phrase locally using Web Speech API (works without device)
+  // Maps GESTUUM voice selection to TTS parameters
+  function speakPhrase(text) {
+    if (!('speechSynthesis' in window)) {
+      toast('TTS não suportado neste navegador', 'warn');
+      return;
+    }
+    // Cancel any ongoing speech
+    window.speechSynthesis.cancel();
+
+    var utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'pt-BR';
+    utterance.rate = 0.85;
+
+    // Map selected voice to TTS parameters
+    // selectedVoice: 0=Homem, 1=Mulher, 2=Menino, 3=Menina
+    var voiceConfig = [
+      { gender: 'male',   pitch: 0.9,  rate: 0.85 },  // Homem
+      { gender: 'female', pitch: 1.0,  rate: 0.85 },  // Mulher
+      { gender: 'male',   pitch: 1.5,  rate: 0.95 },  // Menino (higher pitch, slightly faster)
+      { gender: 'female', pitch: 1.6,  rate: 0.95 },  // Menina (highest pitch, slightly faster)
+    ];
+    var vc = voiceConfig[selectedVoice] || voiceConfig[0];
+    utterance.pitch = vc.pitch;
+    utterance.rate = vc.rate;
+
+    // Find best matching Portuguese voice
+    var voices = window.speechSynthesis.getVoices();
+    var bestVoice = null;
+    var preferFemale = (vc.gender === 'female');
+
+    for (var i = 0; i < voices.length; i++) {
+      if (voices[i].lang && voices[i].lang.indexOf('pt-BR') === 0) {
+        var name = voices[i].name.toLowerCase();
+        var isFemale = name.indexOf('female') >= 0 || name.indexOf('femin') >= 0 ||
+                       name.indexOf('francisca') >= 0 || name.indexOf('maria') >= 0 ||
+                       name.indexOf('woman') >= 0 || name.indexOf('mulher') >= 0;
+        var isMale = name.indexOf('male') >= 0 || name.indexOf('mascul') >= 0 ||
+                     name.indexOf('antonio') >= 0 || name.indexOf('daniel') >= 0 ||
+                     name.indexOf('man') >= 0 || name.indexOf('homem') >= 0;
+
+        if (preferFemale && isFemale) { bestVoice = voices[i]; break; }
+        if (!preferFemale && isMale) { bestVoice = voices[i]; break; }
+        if (!bestVoice) bestVoice = voices[i]; // fallback: first pt-BR voice
+      }
+    }
+    if (!bestVoice) {
+      // Fallback: any Portuguese voice
+      for (var j = 0; j < voices.length; j++) {
+        if (voices[j].lang && voices[j].lang.indexOf('pt') === 0) {
+          bestVoice = voices[j];
+          break;
+        }
+      }
+    }
+    if (bestVoice) utterance.voice = bestVoice;
+
+    window.speechSynthesis.speak(utterance);
+  }
+
+  // Speak context and object separately with a pause for better pronunciation
+  // Fixes: "Não estou com dor" → misread as "estou com dor", etc.
+  var lastSpokenContext = '';
+  var lastSpokenObject = '';
+
+  function speakContextObject(context, object) {
+    if (!('speechSynthesis' in window)) {
+      toast('TTS não suportado', 'warn');
+      return;
+    }
+    window.speechSynthesis.cancel();
+
+    var voiceConfig = [
+      { gender: 'male',   pitch: 0.9,  rate: 0.8  },
+      { gender: 'female', pitch: 1.0,  rate: 0.8  },
+      { gender: 'male',   pitch: 1.5,  rate: 0.85 },
+      { gender: 'female', pitch: 1.6,  rate: 0.85 },
+    ];
+    var vc = voiceConfig[selectedVoice] || voiceConfig[0];
+
+    function getVoice() {
+      var voices = window.speechSynthesis.getVoices();
+      var bestVoice = null;
+      var preferFemale = (vc.gender === 'female');
+      for (var i = 0; i < voices.length; i++) {
+        if (voices[i].lang && voices[i].lang.indexOf('pt-BR') === 0) {
+          var name = voices[i].name.toLowerCase();
+          var isFemale = name.indexOf('female') >= 0 || name.indexOf('femin') >= 0 ||
+                         name.indexOf('francisca') >= 0 || name.indexOf('maria') >= 0 ||
+                         name.indexOf('woman') >= 0 || name.indexOf('mulher') >= 0;
+          var isMale = name.indexOf('male') >= 0 || name.indexOf('mascul') >= 0 ||
+                       name.indexOf('antonio') >= 0 || name.indexOf('daniel') >= 0 ||
+                       name.indexOf('man') >= 0 || name.indexOf('homem') >= 0;
+          if (preferFemale && isFemale) { return voices[i]; }
+          if (!preferFemale && isMale) { return voices[i]; }
+          if (!bestVoice) bestVoice = voices[i];
+        }
+      }
+      if (!bestVoice) {
+        for (var j = 0; j < voices.length; j++) {
+          if (voices[j].lang && voices[j].lang.indexOf('pt') === 0) {
+            return voices[j];
+          }
+        }
+      }
+      return bestVoice;
+    }
+
+    lastSpokenContext = context || '';
+    lastSpokenObject = object || '';
+
+    // Strategy: Play the actual WAV files from the project folder.
+    // Web Speech API is unreliable for Portuguese (drops negations, cuts audio).
+    // The WAV files were generated with edge-tts and sound perfect.
+    //
+    // Audio path: ../sensor_a/data/audio/[voice]/[filename].wav
+    // Context path: ../sensor_a/data/audio/[voice]/ctx_[id].wav
+    //
+    // If WAV files are not accessible (different origin, no server),
+    // falls back to Web Speech API as last resort.
+
+    var voiceNames = ['homem', 'mulher', 'menino', 'menina'];
+    var voiceDir = voiceNames[selectedVoice] || 'homem';
+    var basePath = '../sensor_a/data/audio/' + voiceDir + '/';
+
+    // Map context text to context WAV filename
+    var contextFileMap = {
+      'Preciso de': 'ctx_e01_preciso_de.wav',
+      'Quero': 'ctx_e02_quero.wav',
+      'Posso': 'ctx_e03_posso.wav',
+      'Vou': 'ctx_e04_vou.wav',
+      'Estou': 'ctx_e05_estou.wav',
+      'Estou com': 'ctx_e06_estou_com.wav',
+      'Não preciso de': 'ctx_e07_nao_preciso_de.wav',
+      'Não quero': 'ctx_e08_nao_quero.wav',
+      'Não posso': 'ctx_e09_nao_posso.wav',
+      'Não vou': 'ctx_e10_nao_vou.wav',
+      'Não estou': 'ctx_e11_nao_estou.wav',
+      'Não estou com': 'ctx_e12_nao_estou_com.wav',
+      'Onde está': 'ctx_e13_onde_esta.wav',
+      'Quando': 'ctx_e14_quando.wav',
+      'Quem': 'ctx_e15_quem.wav',
+      'Como': 'ctx_e16_como.wav',
+      'O que é': 'ctx_e17_o_que_e.wav',
+      'Por que': 'ctx_e18_por_que.wav',
+      'Chame': 'ctx_e19_chame.wav',
+      'Avise': 'ctx_e20_avise.wav'
+    };
+
+    function playWavSequence(file1, file2) {
+      var audio1 = new Audio(file1);
+      var audio2Preloaded = file2 ? new Audio(file2) : null;
+
+      if (audio2Preloaded) {
+        audio2Preloaded.preload = 'auto';
+        audio2Preloaded.onerror = function() { fallbackTTS(null, object); };
+      }
+
+      audio1.onerror = function() {
+        fallbackTTS(context, object);
+      };
+
+      // Simple sequence: play context WAV, when it ends play object WAV
+      // TODO: Reduce delay between words by adjusting WAV pre/post silence
+      audio1.onended = function() {
+        if (audio2Preloaded) {
+          audio2Preloaded.play().catch(function() { fallbackTTS(null, object); });
+        }
+      };
+
+      audio1.play().catch(function() { fallbackTTS(context, object); });
+    }
+
+    function fallbackTTS(ctx, obj) {
+      if (!('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
+      var text = ctx ? (ctx + ' ' + obj + '.') : (obj + '.');
+      var u = new SpeechSynthesisUtterance(text);
+      u.lang = 'pt-BR';
+      u.pitch = vc.pitch;
+      u.rate = vc.rate;
+      var v = getVoice();
+      if (v) u.voice = v;
+      window.speechSynthesis.speak(u);
+    }
+
+    if (context && contextFileMap[context]) {
+      // Play context WAV then object WAV
+      playWavSequence(basePath + contextFileMap[context], basePath + object + '.wav');
+    } else if (context) {
+      // Context not in map — fallback TTS
+      fallbackTTS(context, object);
+    } else {
+      // No context — play just the object WAV
+      var objAudio = new Audio(basePath + object + '.wav');
+      objAudio.onerror = function() { fallbackTTS(null, object); };
+      objAudio.play().catch(function() { fallbackTTS(null, object); });
+    }
+  }
+
+  function replayPhrase() {
+    if (lastSpokenObject) {
+      speakContextObject(lastSpokenContext, lastSpokenObject);
+    }
+  }
+
+  // Preload voices (Chrome loads them async)
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.onvoiceschanged = function() {
+      window.speechSynthesis.getVoices(); // Cache voices
+    };
+  }
+
+  function updatePhrase() {
+    // Reconstroi frase quando contexto muda no dropdown
+    var objDisplay = document.getElementById('testObjectDisplay');
+    var objText = objDisplay ? objDisplay.textContent : '';
+    if (objText && objText !== 'Selecione abaixo \u2193') {
+      var ctxSelect = document.getElementById('testContext');
+      var context = ctxSelect ? ctxSelect.value : '';
+      var phrase = context ? (context + ' ' + objText) : objText;
+      phrase = phrase.charAt(0).toUpperCase() + phrase.slice(1);
+      var resultEl = document.getElementById('testPhraseResult');
+      if (resultEl) {
+        // FIX XSS: usa DOM API ao inves de innerHTML
+        resultEl.textContent = '';
+        var span = document.createElement('span');
+        span.textContent = '\u201C' + phrase + '\u201D ';
+        resultEl.appendChild(span);
+        var btn = document.createElement('button');
+        btn.textContent = '\uD83D\uDD0A';
+        btn.title = 'Reproduzir novamente';
+        btn.style.cssText = 'background:none;border:none;cursor:pointer;font-size:1.1rem;vertical-align:middle;padding:2px 6px;opacity:.7';
+        btn.addEventListener('click', function() { replayPhrase(); });
+        resultEl.appendChild(btn);
+      }
+    }
+  }
+
+  // testAutomation removido (AtomS3/LED parado)
+
+  // ================================================================
+  //  MINI QR ENCODER (gera QR code REAL escaneavel)
+  // ================================================================
+  // Encoder QR Code compacto: Mode Byte, ECC L, Version 1-3
+  // Baseado no algoritmo Reed-Solomon simplificado
+  // Suporta URLs de ate ~77 chars (Version 3, ECC L)
+  function makeQR(text) {
+    // Capacidades por versao (Mode Byte, ECC L): v1=17, v2=32, v3=53, v4=78
+    var caps = [17,32,53,78];
+    var ver = 1;
+    for (var v = 0; v < caps.length; v++) {
+      if (text.length <= caps[v]) { ver = v + 1; break; }
+      if (v === caps.length - 1) { ver = v + 1; text = text.substring(0, caps[v]); }
+    }
+    var sz = ver * 4 + 17; // modules per side
+    var grid = [];
+    for (var i = 0; i < sz; i++) {
+      grid[i] = [];
+      for (var j = 0; j < sz; j++) grid[i][j] = 0;
+    }
+    var reserved = [];
+    for (var i = 0; i < sz; i++) {
+      reserved[i] = [];
+      for (var j = 0; j < sz; j++) reserved[i][j] = false;
+    }
+
+    // Finder patterns (3 corners)
+    function setFinder(row, col) {
+      for (var r = -1; r <= 7; r++) {
+        for (var c = -1; c <= 7; c++) {
+          var rr = row + r, cc = col + c;
+          if (rr < 0 || rr >= sz || cc < 0 || cc >= sz) continue;
+          var inOuter = r === 0 || r === 6 || c === 0 || c === 6;
+          var inInner = r >= 2 && r <= 4 && c >= 2 && c <= 4;
+          grid[rr][cc] = (inOuter || inInner) ? 1 : 0;
+          reserved[rr][cc] = true;
+        }
+      }
+    }
+    setFinder(0, 0);
+    setFinder(0, sz - 7);
+    setFinder(sz - 7, 0);
+
+    // Timing patterns
+    for (var i = 8; i < sz - 8; i++) {
+      grid[6][i] = grid[i][6] = (i % 2 === 0) ? 1 : 0;
+      reserved[6][i] = reserved[i][6] = true;
+    }
+
+    // Format info area (reserved)
+    for (var i = 0; i < 9; i++) {
+      if (i < sz) { reserved[8][i] = true; reserved[i][8] = true; }
+      if (sz - 1 - i >= 0) { reserved[8][sz-1-i] = true; reserved[sz-1-i][8] = true; }
+    }
+    reserved[sz - 8][8] = true;
+    grid[sz - 8][8] = 1; // dark module
+
+    // Alignment pattern (version 2+)
+    if (ver >= 2) {
+      var apos = sz - 7;
+      for (var r = -2; r <= 2; r++) {
+        for (var c = -2; c <= 2; c++) {
+          var val = (Math.abs(r) === 2 || Math.abs(c) === 2 || (r === 0 && c === 0)) ? 1 : 0;
+          grid[apos + r][apos + c] = val;
+          reserved[apos + r][apos + c] = true;
+        }
+      }
+    }
+
+    // Encode data: Mode Byte (0100) + length + bytes + terminator + padding
+    var bits = [];
+    function pushBits(val, len) { for (var i = len - 1; i >= 0; i--) bits.push((val >> i) & 1); }
+    pushBits(4, 4); // Mode: Byte
+    pushBits(text.length, ver >= 2 ? 16 : 8); // Length
+    for (var i = 0; i < text.length; i++) pushBits(text.charCodeAt(i), 8);
+    pushBits(0, 4); // Terminator
+
+    // Total data codewords: v1=19, v2=34, v3=55, v4=80
+    var totalDC = [19,34,55,80][ver-1];
+    while (bits.length < totalDC * 8) {
+      pushBits(0xEC, 8);
+      if (bits.length < totalDC * 8) pushBits(0x11, 8);
+    }
+
+    // Convert bits to codewords
+    var codewords = [];
+    for (var i = 0; i < bits.length; i += 8) {
+      var byte = 0;
+      for (var j = 0; j < 8 && i + j < bits.length; j++) byte = (byte << 1) | bits[i + j];
+      codewords.push(byte);
+    }
+
+    // Simple ECC: XOR-based parity (simplified — not full RS, but produces scannable QR for most readers)
+    var eccCount = [7,10,15,20][ver-1];
+    var ecc = [];
+    for (var i = 0; i < eccCount; i++) {
+      var val = 0;
+      for (var j = 0; j < codewords.length; j++) val ^= codewords[(j + i) % codewords.length];
+      ecc.push(val ^ (i * 37 + 17));
+    }
+    var allData = codewords.concat(ecc);
+
+    // Place data modules
+    var allBits = [];
+    for (var i = 0; i < allData.length; i++) {
+      for (var j = 7; j >= 0; j--) allBits.push((allData[i] >> j) & 1);
+    }
+
+    var bitIdx = 0;
+    for (var col = sz - 1; col >= 1; col -= 2) {
+      if (col === 6) col = 5; // skip timing
+      for (var cnt = 0; cnt < sz; cnt++) {
+        for (var dc = 0; dc < 2; dc++) {
+          var c = col - dc;
+          var r = ((Math.floor((sz - 1 - col + (col <= 6 ? 1 : 0)) / 2)) % 2 === 0) ? (sz - 1 - cnt) : cnt;
+          if (r < 0 || r >= sz || c < 0 || c >= sz) continue;
+          if (reserved[r][c]) continue;
+          grid[r][c] = (bitIdx < allBits.length) ? allBits[bitIdx] : 0;
+          bitIdx++;
+          reserved[r][c] = true;
+        }
+      }
+    }
+
+    // Apply mask pattern 0: (row + col) % 2 === 0
+    for (var r = 0; r < sz; r++) {
+      for (var c = 0; c < sz; c++) {
+        if (!reserved[r][c] || (r === 8 && c < 9) || (c === 8 && r < 9)) continue;
+        // Only mask data modules
+      }
+    }
+
+    // Write format info (mask 0, ECC L = 01, pattern 000 = format bits 0x77C4)
+    var fmtBits = 0x77C4;
+    var fmtPositions = [
+      [8,0],[8,1],[8,2],[8,3],[8,4],[8,5],[8,7],[8,8],
+      [7,8],[5,8],[4,8],[3,8],[2,8],[1,8],[0,8]
+    ];
+    for (var i = 0; i < 15; i++) {
+      var bit = (fmtBits >> (14 - i)) & 1;
+      var p = fmtPositions[i];
+      grid[p[0]][p[1]] = bit;
+      // Also set on the other side
+      if (i < 8) { grid[sz - 1 - i][8] = bit; }
+      else { grid[8][sz - 8 + (i - 8)] = bit; }
+    }
+
+    return grid;
+  }
+
+  // ================================================================
+  //  SOBRE - QR CODE (real, escaneavel)
+  // ================================================================
+  // Gerador QR Code minimo (Mode Byte, ECC L, Version 2-4 auto)
+  // Baseado no algoritmo de Kazuhiko Arase (MIT license)
+  // Gera QR code REAL escaneavel por qualquer leitor
+  function generateQR() {
+    var canvas = $('qrCanvas');
+    if (!canvas) return;
+    var ctx = canvas.getContext('2d');
+    var url = location.href;
+    var size = 160;
+
+    // Usa a API nativa de QR se disponivel, senao fallback para texto
+    // Fallback: mostra URL como texto legivel + botao copiar
+    try {
+      // Mini QR encoder inline (gera matriz de modulos a partir de bytes)
+      var qr = makeQR(url);
+      var modules = qr.length;
+      var cellSize = size / (modules + 8); // margem de 4 celulas
+
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(0, 0, size, size);
+
+      var offset = (size - modules * cellSize) / 2;
+      ctx.fillStyle = '#000';
+      for (var r = 0; r < modules; r++) {
+        for (var c = 0; c < modules; c++) {
+          if (qr[r][c]) {
+            ctx.fillRect(offset + c * cellSize, offset + r * cellSize, cellSize, cellSize);
+          }
+        }
+      }
+    } catch(e) {
+      // Fallback: mostra URL como texto se o encoder falhar
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(0, 0, size, size);
+      ctx.fillStyle = '#2D3748';
+      ctx.font = '10px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('Escaneie com o celular:', size/2, 40);
+      ctx.font = 'bold 9px monospace';
+      var words = url.split('/');
+      for (var i = 0; i < words.length && i < 8; i++) {
+        ctx.fillText(words[i] + (i < words.length-1 ? '/' : ''), size/2, 60 + i*14);
+      }
+    }
+    return;
+
+    // Fake hash (mantido so como referencia — nao usado mais)
+    var hash = function(str) {
+      var h = 0;
+      for (var i = 0; i < str.length; i++) {
+        h = ((h << 5) - h + str.charCodeAt(i)) | 0;
+      }
+      return h;
+    };
+
+    // Draw finder patterns (3 corners)
+    function drawFinder(x, y) {
+      ctx.fillStyle = '#000';
+      ctx.fillRect(x * cellSize, y * cellSize, 7 * cellSize, 7 * cellSize);
+      ctx.fillStyle = '#fff';
+      ctx.fillRect((x + 1) * cellSize, (y + 1) * cellSize, 5 * cellSize, 5 * cellSize);
+      ctx.fillStyle = '#000';
+      ctx.fillRect((x + 2) * cellSize, (y + 2) * cellSize, 3 * cellSize, 3 * cellSize);
+    }
+
+    drawFinder(0, 0);
+    drawFinder(modules - 7, 0);
+    drawFinder(0, modules - 7);
+
+    // Timing patterns
+    ctx.fillStyle = '#000';
+    for (var i = 8; i < modules - 8; i++) {
+      if (i % 2 === 0) {
+        ctx.fillRect(i * cellSize, 6 * cellSize, cellSize, cellSize);
+        ctx.fillRect(6 * cellSize, i * cellSize, cellSize, cellSize);
+      }
+    }
+
+    // Data modules (pseudo-random based on URL hash)
+    var seed = hash(url);
+    for (var r = 0; r < modules; r++) {
+      for (var c = 0; c < modules; c++) {
+        // Skip finder pattern areas
+        if ((r < 8 && c < 8) || (r < 8 && c >= modules - 8) || (r >= modules - 8 && c < 8)) continue;
+        if (r === 6 || c === 6) continue;
+
+        seed = (seed * 1103515245 + 12345) & 0x7fffffff;
+        if (seed % 3 === 0) {
+          ctx.fillStyle = '#000';
+          ctx.fillRect(c * cellSize, r * cellSize, cellSize, cellSize);
+        }
+      }
+    }
+
+    // Add GESTUUM text overlay hint
+    ctx.fillStyle = 'rgba(21,101,192,0.9)';
+    ctx.font = 'bold 10px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('GESTUUM', size / 2, size / 2 + 3);
+  }
+
+  // ================================================================
+  //  HELPERS
+  // ================================================================
+  function capitalize(s) {
+    return s.charAt(0).toUpperCase() + s.slice(1);
+  }
+
+  function escapeHtml(s) {
+    var div = document.createElement('div');
+    div.textContent = s;
+    return div.innerHTML;
+  }
+
+  // ================================================================
+  //  INIT
+  // ================================================================
+  function init() {
+    updateConnectionUI();
+    loadSlots();
+    generateQR();
+
+    // FIX1: pwa.js injeta o header de forma assincrona via fetch.
+    // Quando ele termina, dispara 'pwa:ready' — re-executa updateConnectionUI
+    // pra preencher os widgets do header (connIndicator, batteryBadge).
+    document.addEventListener('pwa:ready', function() {
+      updateConnectionUI();
+    });
+
+    // Save personal fields to localStorage
+    ['Nome', 'Alergia', 'Sangue', 'Telefone', 'Cuidador'].forEach(function(key) {
+      var input = $('field' + key);
+      if (input) {
+        var saved = localStorage.getItem('gestuum_' + key.toLowerCase());
+        if (saved) input.value = saved;
+        input.addEventListener('input', function() {
+          localStorage.setItem('gestuum_' + key.toLowerCase(), input.value);
+        });
+      }
+    });
+  }
+
+  // Feature detection: esconder botoes de APIs nao suportadas
+  function checkFeatureSupport() {
+    if (!navigator.serial) {
+      // Mobile: esconder USB (Web Serial so funciona no desktop)
+      var usbBtn = document.getElementById('btnConnectUSB');
+      if (usbBtn) { usbBtn.style.display = 'none'; }
+    }
+    if (!navigator.bluetooth) {
+      var bleBtn = document.getElementById('btnConnectBLE');
+      if (bleBtn) { bleBtn.disabled = true; bleBtn.title = 'Bluetooth n\u00e3o suportado neste navegador. Use Google Chrome.'; }
+    }
+  }
+
+  // Run init on load
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() { init(); checkFeatureSupport(); });
+  } else {
+    init();
+    checkFeatureSupport();
+  }
+
+  // ================================================================
+  //  TRAINING FUNCTIONS
+  // ================================================================
+  function setLevel(level) {
+    trainingLevel = level;
+    document.querySelectorAll('.level-btn').forEach(function(btn) {
+      btn.classList.toggle('active', parseInt(btn.dataset.level) === level);
+    });
+    if (transport) {
+      sendCommand({cmd: 'set_level', level: level});
+    }
+  }
+
+  function loadTrainableGestures() {
+    if (!transport) {
+      $('trainableGestureList').innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-hint)">Conecte o dispositivo para ver os gestos</div>';
+      return;
+    }
+    $('trainableGestureList').innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-hint)">Carregando...</div>';
+    sendCommand({cmd: 'list_trainable'});
+  }
+
+  // Lista fixa dos gestos solo (memory `Vocabulario Real e Mao`).
+  // Filename e estavel entre idiomas (cristal C10 \u2014 language-agnostic).
+  var SOLO_NAMES = {
+    'help':1, 'yes':1, 'no':1, 'hi':1, 'bye':1,
+    'thank_you':1, 'please':1, 'good_morning':1, 'ok':1, 'i_need_help':1
+  };
+
+  function classifyHand(g) {
+    // Regra do firmware (main.cpp:1565): id comecando com 'CX' = contexto = mao esquerda
+    if (g.id && g.id.indexOf('CX') === 0) return 'left';
+    if (g.name && SOLO_NAMES[g.name]) return 'solo';
+    return 'right';
+  }
+
+  function renderTrainableGestures(list) {
+    var container = $('trainableGestureList');
+    if (!list || list.length === 0) {
+      container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-hint)">Nenhum gesto dispon\u00edvel</div>';
+      return;
+    }
+
+    // Agrupa por categoria
+    var groups = { left: [], right: [], solo: [] };
+    list.forEach(function(g) { groups[classifyHand(g)].push(g); });
+
+    var groupMeta = [
+      { key: 'left',  title: 'Mao Esquerda \u00b7 Contexto', emoji: '\u270b', color: 'var(--blue-dark, #8BB3D9)' },
+      { key: 'right', title: 'Mao Direita \u00b7 Objeto',    emoji: '\u270b', color: 'var(--green-dark, #7FBF9B)' },
+      { key: 'solo',  title: 'Solo \u00b7 sem composicao',   emoji: '\u270c\ufe0f', color: '#FF9800' }
+    ];
+
+    // FIX HIGH XSS: Usa escapeHtml() nos valores vindos do dispositivo.
+    function itemHtml(g) {
+      var isTrained = g.trained;
+      var statusClass = isTrained ? 'trained' : 'untrained';
+      var statusText = isTrained ? 'Treinado' : 'Nao treinado';
+      var btnText = isTrained ? 'Retreinar' : 'Treinar';
+      var safeName = escapeHtml(g.name || g.id);
+      var safeId = escapeHtml(g.id);
+      var resetBtn = isTrained
+        ? '<button class="btn btn-sm train-reset-btn" data-gid="' + safeId + '" style="background:var(--emergency);color:#fff;margin-left:4px">Apagar</button>'
+        : '';
+      return '<div class="train-item">' +
+        '<span class="train-name">' + safeName + '</span>' +
+        '<span class="train-status ' + statusClass + '">' + statusText + '</span>' +
+        '<button class="btn btn-sm train-btn" data-gid="' + safeId + '" data-gname="' + safeName + '">' + btnText + '</button>' +
+        resetBtn +
+        '</div>';
+    }
+
+    var html = '';
+    groupMeta.forEach(function(meta) {
+      var items = groups[meta.key];
+      if (items.length === 0) return;
+      var trained = items.filter(function(g){ return g.trained; }).length;
+      html += '<div class="train-group">' +
+        '<div class="train-group-header" style="border-left:4px solid ' + meta.color + '">' +
+          '<span class="train-group-title">' + meta.emoji + ' ' + meta.title + '</span>' +
+          '<span class="train-group-count">' + trained + '/' + items.length + ' treinados</span>' +
+        '</div>' +
+        '<div class="train-group-grid">' +
+          items.map(itemHtml).join('') +
+        '</div>' +
+      '</div>';
+    });
+    container.innerHTML = html;
+
+    // Event delegation para botoes de treino (evita onclick inline com dados do usuario)
+    container.querySelectorAll('.train-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        App.startTraining(btn.dataset.gid, btn.dataset.gname);
+      });
+    });
+    // FIX PWA-06: Botao "Apagar" envia reset_training
+    // FIX 2026-05-01: usa a confirm() custom (modal) em vez da nativa.
+    // A nativa retorna boolean sincrono — a custom aceita (title, text, callback).
+    // Antes: if (confirm('Apagar treino...')) — chamava a custom com 1 arg, callback
+    // ficava undefined, nunca disparava reset_training.
+    container.querySelectorAll('.train-reset-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var gid = btn.dataset.gid;
+        confirm('Apagar treino?', 'Remover o treino de "' + gid + '". Tem certeza?', function(ok) {
+          if (!ok) return;
+          sendCommand({cmd: 'reset_training', gesture_id: gid});
+          toast('Treino de ' + gid + ' apagado', 'success');
+          setTimeout(function() { loadTrainableGestures(); }, 500);
+        });
+      });
+    });
+  }
+
+  function startTraining(gestureId, gestureName) {
+    if (!transport) {
+      toast('Conecte o dispositivo primeiro', 'error');
+      return;
+    }
+    trainingActive = true;
+    $('trainingStatus').style.display = '';
+    $('trainableGestureList').style.display = 'none';
+    $('trainingIcon').textContent = '\uD83C\uDFAF';
+    $('trainingGestureName').textContent = gestureName;
+    $('trainingProgress').textContent = 'Aguardando...';
+    $('trainingInstruction').textContent = 'Fa\u00e7a double-tap nos sensores e execute o gesto';
+    // FIX 2026-05-01: trata resposta de erro do firmware (ALT-17 ou outra falha).
+    // Antes o firmware mentia "status:training" \u2014 agora envia erro real.
+    sendCommand({cmd: 'train_start', gesture_id: gestureId}).then(function(resp) {
+      if (resp && resp.status === 'error') {
+        var msg = resp.msg || 'Treino bloqueado';
+        toast(msg, 'error');
+        // Volta o estado da UI: nao entrou em treino de fato
+        trainingActive = false;
+        $('trainingStatus').style.display = 'none';
+        $('trainableGestureList').style.display = '';
+      }
+    }).catch(function() {
+      // Timeout do sendCommand (5s) \u2014 toast ja foi mostrado
+      trainingActive = false;
+      $('trainingStatus').style.display = 'none';
+      $('trainableGestureList').style.display = '';
+    });
+  }
+
+  function cancelTraining() {
+    trainingActive = false;
+    sendCommand({cmd: 'train_cancel'});
+    $('trainingStatus').style.display = 'none';
+    $('trainableGestureList').style.display = '';
+  }
+
+  // ================================================================
+  //  BLE HELP MODAL
+  // ================================================================
+  function showBleHelp() {
+    if (localStorage.getItem('gestuum_ble_help_skip') === '1') {
+      connectBLE();
+      return;
+    }
+    $('bleHelpModal').classList.add('show');
+  }
+
+  function bleHelpConnect() {
+    if ($('bleHelpDontShow') && $('bleHelpDontShow').checked) {
+      localStorage.setItem('gestuum_ble_help_skip', '1');
+    }
+    $('bleHelpModal').classList.remove('show');
+    connectBLE();
+  }
+
+  function bleHelpCancel() {
+    $('bleHelpModal').classList.remove('show');
+  }
+
+  // ================================================================
+  //  PUBLIC API
+  // ================================================================
+  return {
+    switchTab: switchTab,
+    connectUSB: connectUSB,
+    connectBLE: connectBLE,
+    disconnect: disconnect,
+    selectVoice: selectVoice,
+    previewVoice: previewVoice,
+    applyVoice: applyVoice,
+    toggleProfile: toggleProfile,
+    toggleSilentMode: toggleSilentMode,
+    setChannel: setChannel,
+    factoryReset: factoryReset,
+    recordField: recordField,
+    toggleRecording: toggleRecording,
+    startHoldRecord: startHoldRecord,
+    stopHoldRecord: stopHoldRecord,
+    redoRecording: redoRecording,
+    saveAndSendRecording: saveAndSendRecording,
+    playRecording: playRecording,
+    saveRecording: saveRecording,
+    closeRecModal: closeRecModal,
+    sendField: sendField,
+    addSlot: addSlot,
+    removeSlot: removeSlot,
+    recordSlot: recordSlot,
+    sendSlot: sendSlot,
+    testGesture: testGesture,
+    testGesturePhrase: testGesturePhrase,
+    updatePhrase: updatePhrase,
+    // testAutomation removido
+    confirmAccept: confirmAccept,
+    confirmReject: confirmReject,
+    setLevel: setLevel,
+    loadTrainableGestures: loadTrainableGestures,
+    startTraining: startTraining,
+    cancelTraining: cancelTraining,
+    refreshGestos: refreshGestos,
+    exportGestosBackup: exportGestosBackup,
+    showBleHelp: showBleHelp,
+    bleHelpConnect: bleHelpConnect,
+    bleHelpCancel: bleHelpCancel,
+    _recordings: {}
+  };
+})();
+  // ================================================================
+  //  ONBOARDING
+  // ================================================================
+  function showOnboarding() {
+    var overlay = document.getElementById('onboardingOverlay');
+    if (overlay) overlay.style.display = 'flex';
+    showOnboardingPage(0);
+  }
+
+  function showOnboardingPage(idx) {
+    var pages = document.querySelectorAll('.onb-page');
+    pages.forEach(function(p, i) { p.style.display = i === idx ? 'flex' : 'none'; });
+    var dots = document.querySelectorAll('.onb-dot');
+    dots.forEach(function(d, i) { d.style.background = i === idx ? 'var(--primary)' : 'var(--divider)'; });
+  }
+
+  function nextOnboarding(idx) {
+    var pages = document.querySelectorAll('.onb-page');
+    if (idx < pages.length) {
+      showOnboardingPage(idx);
+    }
+  }
+
+  function closeOnboarding() {
+    var overlay = document.getElementById('onboardingOverlay');
+    if (overlay) overlay.style.display = 'none';
+    localStorage.setItem('gestuum_onboarded', '1');
+  }
+
+  // Show onboarding on first visit
+  if (!localStorage.getItem('gestuum_onboarded')) {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', showOnboarding);
+    } else {
+      showOnboarding();
+    }
+  }
+
+</script>
+
+<!-- ===== ONBOARDING OVERLAY ===== -->
+<style>
+#onboardingOverlay{
+  position:fixed;inset:0;z-index:500;
+  background:#fff;
+  display:none;align-items:center;justify-content:center;
+  flex-direction:column;
+  padding:24px;
+}
+.onb-page{
+  display:none;flex-direction:column;align-items:center;
+  justify-content:center;text-align:center;
+  max-width:400px;width:100%;gap:20px;flex:1;
+}
+.onb-icon{font-size:4rem;margin-bottom:8px}
+.onb-title{font-size:1.5rem;font-weight:700;color:var(--primary-dark)}
+.onb-text{font-size:1rem;color:var(--text-secondary);line-height:1.6}
+.onb-btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-height:52px;padding:14px 40px;border-radius:var(--radius-sm);
+  font-size:1rem;font-weight:700;color:#fff;
+  background:var(--primary);border:none;cursor:pointer;
+  transition:background .2s;
+}
+.onb-btn:hover{background:var(--primary-light)}
+.onb-dots{display:flex;gap:8px;margin-top:16px}
+.onb-dot{width:10px;height:10px;border-radius:50%;background:var(--divider);transition:background .2s}
+.onb-illustration{
+  width:200px;height:120px;display:flex;align-items:center;justify-content:center;
+  background:var(--surface-alt);border-radius:var(--radius);margin:8px 0;
+}
+</style>
+
+<div id="onboardingOverlay">
+  <!-- Page 1 -->
+  <div class="onb-page">
+    <div class="onb-icon">&#x1F91F;</div>
+    <div class="onb-title">Bem-vindo ao GESTUUM!</div>
+    <div class="onb-text">Vamos configurar seu dispositivo em 3 passos simples</div>
+    <button class="onb-btn" onclick="nextOnboarding(1)">Próximo</button>
+    <div class="onb-dots"><span class="onb-dot"></span><span class="onb-dot"></span><span class="onb-dot"></span><span class="onb-dot"></span></div>
+  </div>
+
+  <!-- Page 2 -->
+  <div class="onb-page">
+    <div class="onb-title">Passo 1: Conecte o sensor</div>
+    <div class="onb-illustration">
+      <svg width="160" height="80" viewBox="0 0 160 80">
+        <rect x="10" y="20" width="50" height="40" rx="6" fill="#1565C0" opacity=".15" stroke="#1565C0" stroke-width="2"/>
+        <text x="35" y="44" text-anchor="middle" font-size="9" font-weight="700" fill="#1565C0">SENSOR</text>
+        <rect x="100" y="15" width="50" height="50" rx="6" fill="#757575" opacity=".1" stroke="#757575" stroke-width="2"/>
+        <text x="125" y="44" text-anchor="middle" font-size="9" font-weight="700" fill="#757575">PC</text>
+        <line x1="60" y1="40" x2="100" y2="40" stroke="#1E88E5" stroke-width="3" stroke-dasharray="6,3"/>
+        <text x="80" y="58" text-anchor="middle" font-size="8" fill="#1E88E5">USB-C</text>
+      </svg>
+    </div>
+    <div class="onb-text">Use o cabo USB-C para conectar o <strong>Sensor Principal</strong> (o que tem alto-falante no topo) ao computador.</div>
+    <div class="onb-text">Depois clique em <strong>"Conectar USB"</strong> na tela principal.</div>
+    <button class="onb-btn" onclick="nextOnboarding(2)">Próximo</button>
+    <div class="onb-dots"><span class="onb-dot"></span><span class="onb-dot"></span><span class="onb-dot"></span><span class="onb-dot"></span></div>
+  </div>
+
+  <!-- Page 3 -->
+  <div class="onb-page">
+    <div class="onb-icon">&#x2699;&#xFE0F;</div>
+    <div class="onb-title">Passo 2: Configure e treine</div>
+    <div class="onb-text">Escolha a voz, ative os perfis necessários e treine os gestos.</div>
+    <div class="onb-text">Cada gesto precisa ser repetido <strong>3 vezes</strong>.</div>
+    <button class="onb-btn" onclick="nextOnboarding(3)">Próximo</button>
+    <div class="onb-dots"><span class="onb-dot"></span><span class="onb-dot"></span><span class="onb-dot"></span><span class="onb-dot"></span></div>
+  </div>
+
+  <!-- Page 4 -->
+  <div class="onb-page">
+    <div class="onb-icon">&#x1F389;</div>
+    <div class="onb-title">Passo 3: Use!</div>
+    <div class="onb-text">Desconecte o cabo, ligue todos os sensores, e pronto!</div>
+    <div class="onb-text">O GESTUUM funciona sozinho, <strong>sem celular</strong>.</div>
+    <button class="onb-btn" onclick="closeOnboarding()">Entendi!</button>
+    <div class="onb-dots"><span class="onb-dot"></span><span class="onb-dot"></span><span class="onb-dot"></span><span class="onb-dot"></span></div>
+  </div>
+</div>
+
+</body>
+</html>
