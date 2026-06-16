@@ -6,7 +6,7 @@
   **Dispositivo vestível que transforma gestos em fala. Sem celular, sem internet.**
   Autonomia de comunicação para pessoas que se comunicam de forma diferente.
 
-  [![Licença](https://img.shields.io/badge/licen%C3%A7a-Apache%202.0-blue.svg)](LICENSE)
+  [![Licença](https://img.shields.io/badge/licen%C3%A7a-PolyForm%20Noncommercial%201.0.0-blue.svg)](LICENSE)
   [![Status](https://img.shields.io/badge/status-projeto--piloto-green.svg)]()
   [![Feira](https://img.shields.io/badge/Science%20Fair-COREE%202026-orange.svg)](https://www.coreeschool.org.br)
 
@@ -181,13 +181,15 @@ O GESTUUM é um protótipo funcional, não um produto acabado. Próximos passos 
 
 ## Por que código aberto
 
-Tecnologia assistiva costuma ser cara e inacessível. Acreditamos que comunicação é um direito, não um privilégio — por isso liberamos **todo o código do GESTUUM** (firmware, instalador e configurador) sob licença **Apache 2.0**.
+Tecnologia assistiva costuma ser cara e inacessível. Acreditamos que comunicação é um direito, não um privilégio — por isso liberamos **todo o código do GESTUUM** (firmware, instalador e configurador) sob a licença **PolyForm Noncommercial 1.0.0**.
 
-Qualquer pessoa pode estudar, montar o seu, melhorar e adaptar o projeto para a própria comunidade. Se o GESTUUM ajudar uma única pessoa a ser ouvida, já terá valido a pena — e se você levar essa ideia adiante, valerá ainda mais.
+Qualquer pessoa pode **estudar, montar o seu, modificar e compartilhar** o projeto para a própria comunidade — para uso **pessoal, educacional, de pesquisa e sem fins lucrativos**. A única restrição é que **não pode ser usado para fins comerciais**: acessibilidade não é produto. Se o GESTUUM ajudar uma única pessoa a ser ouvida, já terá valido a pena — e se você levar essa ideia adiante, valerá ainda mais.
 
 ## Licença
 
-Código-fonte licenciado sob **Apache License 2.0**. Veja [LICENSE](LICENSE) e [NOTICE](NOTICE).
+Código-fonte licenciado sob a **PolyForm Noncommercial License 1.0.0** — uso livre para fins **não-comerciais** (pessoal, educacional, pesquisa, sem fins lucrativos). **Uso comercial não é permitido.** Veja [LICENSE](LICENSE) e [NOTICE](NOTICE).
+
+> Por usar uma licença não-comercial, o termo mais preciso é **"código aberto não-comercial" / source-available** — não "open source" no sentido estrito da OSI.
 
 Copyright 2026 Alexandre Jalkh.
 
