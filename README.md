@@ -1,9 +1,35 @@
-# GESTUUM — Sua voz não precisa de palavras.
+<div align="center">
+  <img src="app/logo_nova.png" alt="GESTUUM" height="80">
 
-Dispositivo vestível que transforma gestos em fala. Sem celular, sem internet. Autonomia para pessoas que se comunicam de forma diferente.
+  # GESTUUM — Sua voz não precisa de palavras.
 
-**Site:** [gestuum.com](https://gestuum.com)
-**Projeto:** Science Fair COREE 2026 — Programa IB
+  **Dispositivo vestível que transforma gestos em fala. Sem celular, sem internet.**
+  Autonomia de comunicação para pessoas que se comunicam de forma diferente.
+
+  [![Licença](https://img.shields.io/badge/licen%C3%A7a-Apache%202.0-blue.svg)](LICENSE)
+  [![Status](https://img.shields.io/badge/status-projeto--piloto-green.svg)]()
+  [![Feira](https://img.shields.io/badge/Science%20Fair-COREE%202026-orange.svg)](https://www.coreeschool.org.br)
+
+  **Site:** [gestuum.com](https://gestuum.com) · **Escola:** [COREE School](https://www.coreeschool.org.br) · **Programa IB**
+</div>
+
+---
+
+## Índice
+
+- [O que é](#o-que-é)
+- [O projeto](#o-projeto)
+- [Como funciona](#como-funciona)
+- [Hardware](#hardware)
+- [Funcionalidades](#funcionalidades)
+- [Stack técnico](#stack-técnico)
+- [Estrutura do repositório](#estrutura-do-repositório)
+- [Build](#build)
+- [Instalação sem compilar](#instalação-sem-compilar)
+- [O que ficou pendente](#o-que-ficou-pendente)
+- [Equipe e créditos](#equipe-e-créditos)
+- [Por que código aberto](#por-que-código-aberto)
+- [Licença](#licença)
 
 ---
 
@@ -13,13 +39,27 @@ O GESTUUM é um sistema de tecnologia assistiva que reconhece gestos das mãos e
 
 Projetado para pessoas com dificuldade de fala — afasia, paralisia cerebral, ELA, autismo não-verbal, pós-AVC — o GESTUUM devolve autonomia de comunicação sem depender de telas, teclados ou conexão com internet.
 
+> *"Comunicação é um direito, não um privilégio."*
+
+## O projeto
+
+O GESTUUM nasceu como projeto da **Feira de Ciências COREE 2026** (Programa IB), concebido, pesquisado e construído por estudantes da [COREE School](https://www.coreeschool.org.br).
+
+A pergunta que moveu o projeto foi simples e humana: *como devolver autonomia de comunicação a alguém que não consegue falar?* A resposta foi um par de sensores que cabe na mão, lê o movimento e dá voz a quem se comunica de forma diferente — por menos de R$ 600, sem depender de telas nem de conexão.
+
+Mais do que um trabalho de escola, foi uma pesquisa original — com pergunta, experimentos, dados e conclusão — e agora segue como **projeto-piloto de código aberto**, para que outras pessoas possam continuar de onde paramos.
+
 ## Como funciona
 
-1. **Faça o gesto** — O sensor na mão capta aceleração e rotação a 50Hz
-2. **O GESTUUM entende** — O motor Orbital extrai a assinatura do movimento em <1ms
+1. **Faça o gesto** — O sensor na mão capta aceleração e rotação a 50 Hz
+2. **O GESTUUM entende** — O motor Orbital extrai a assinatura do movimento em <1 ms
 3. **Sua voz é ouvida** — O áudio toca pelo speaker integrado e/ou Bluetooth
 
+**Pipeline de reconhecimento:** `IMU (50 Hz) → Matrix3D (grid 11×11×11) → DTW → VoiceManager → áudio`
+
 ### Combine gestos para formar frases
+
+A mão esquerda (Sensor A) define o **contexto** e a direita (Sensor B) define o **objeto**:
 
 | Mão esquerda (contexto) | Mão direita (objeto) | Frase |
 |---|---|---|
@@ -33,8 +73,8 @@ Dois sensores vestíveis:
 
 | Dispositivo | Modelo | Função |
 |---|---|---|
-| Sensor Principal | M5StickC Plus2 + HAT-SPK2 | IMU + display + áudio + reconhecimento de gestos |
-| Sensor Secundário | M5StickC Plus2 | IMU da mão auxiliar, transmite via ESP-NOW |
+| Sensor Principal (A) | M5StickC Plus2 + HAT-SPK2 | IMU + display + áudio + reconhecimento de gestos |
+| Sensor Secundário (B) | M5StickC Plus2 | IMU da mão auxiliar, transmite via ESP-NOW |
 
 **Custo do kit completo:** ~R$ 600
 
@@ -45,20 +85,21 @@ Dois sensores vestíveis:
 - **210+ frases por idioma** — Vocabulário expansível
 - **53 gestos carregados** — Treináveis pelo usuário
 - **Bluetooth A2DP** — Streaming para caixa de som externa
-- **Configuração via smartphone** — App BLE para treino e ajustes
-- **100% sem fio** — ESP-NOW entre sensores (latência <5ms)
+- **Configuração pelo navegador** — App BLE (notebook/PC) para treino e ajustes, sem instalar nada
+- **100% sem fio** — ESP-NOW entre sensores (latência <5 ms)
 - **Sem internet** — Tudo roda local no dispositivo
 
 ## Stack técnico
 
 | Componente | Tecnologia |
 |---|---|
-| SoC | ESP32-PICO-V3-02 (dual-core 240MHz, 8MB Flash, 2MB PSRAM) |
+| SoC | ESP32-PICO-V3-02 (dual-core 240 MHz, 8 MB Flash, 2 MB PSRAM) |
 | Framework | Arduino via PlatformIO (espressif32@6.12.0) |
 | Linguagem | C++ (firmware), Python (tools), HTML/CSS/JS (instalador/configurador) |
 | Comunicação | ESP-NOW (canal 13), BLE GATT, Bluetooth A2DP |
-| Áudio | I2S via M5.Speaker, WAV 48kHz, SPIFFS 5.44MB |
-| Reconhecimento | Modelo Orbital (8 parâmetros) + Grid 11x11x11 + DTW |
+| Áudio | I2S via M5.Speaker, WAV 48 kHz, SPIFFS 5.44 MB |
+| Reconhecimento | Modelo Orbital (8 parâmetros) + Grid 11×11×11 + DTW |
+| Site / PWA | HTML/CSS/JS estático, esp-web-tools, Cloudflare Pages |
 
 ## Estrutura do repositório
 
@@ -94,7 +135,44 @@ cd sensor_a && pio run -t uploadfs --upload-port COM6
 
 ## Instalação sem compilar
 
-O firmware pré-compilado e o instalador web (esp-web-tools) ficam em `app/` — basta servir a pasta e gravar via cabo USB-C direto do navegador (Chrome/Edge).
+O firmware pré-compilado e o instalador web (esp-web-tools) ficam em `app/` — basta servir a pasta e gravar via cabo USB-C direto do navegador.
+
+- **Recomendado e testado:** Chrome ou Edge em **notebook/PC** (Windows, macOS ou Linux)
+- iPhone/iPad **não** funcionam (Safari não suporta Web Serial)
+- Android é teoricamente possível (Chrome + adaptador OTG), mas **não foi testado**
+
+## O que ficou pendente
+
+O GESTUUM é um protótipo funcional, não um produto acabado. Próximos passos — e um convite para quem quiser continuar:
+
+- **Reconhecimento v2 (DTW + Peak Direction):** distinguir gestos opostos e escalar com precisão para um vocabulário maior
+- **Modo de contingência:** manter um conjunto essencial de palavras (sim/não/ajuda/socorro) funcionando mesmo se um dos sensores ficar sem bateria
+- **Robustez e segurança:** reforçar a comunicação entre os sensores e a configuração via app
+- **Voz do tutor:** permitir que um familiar grave a própria voz, para o usuário falar com a voz de quem cuida dele
+- **Validação com usuários reais:** testes acompanhados por fonoaudiólogos e terapeutas ocupacionais
+- **Mais vocabulário e idiomas:** expandir frases e perfis de voz
+
+## Equipe e créditos
+
+**Cientistas (estudantes · Programa IB):**
+
+- Yasmin J.
+- Maria Eduarda F.
+- Francisco R.
+
+**Orientação e tutoria:**
+
+- **Prof. Andrey Queiroz Nascimento** — Geografia (G6 e G7). Licenciado em Geografia, especialista em Práticas do Ensino de Geografia e Educação Ambiental, com mais de 10 anos de experiência em educação e projetos sociais.
+- **Carina Regina Lacava (Ms Lacava)** — CAS e Social Studies (G6, G7 e G8) e Language Arts (G7). Formada em Pedagogia e Psicologia, com especializações em psicopedagogia e educação inovadora; atua em salas bilíngues/internacionais desde 2009. Co-autora do livro *"Costurando Saberes"*.
+- **Alexandre Jalkh** — Desenvolvimento técnico: firmware dos sensores (C++/ESP32), instalador e configurador web, e o pipeline de reconhecimento de gestos.
+
+**Agradecimentos** à [COREE School](https://www.coreeschool.org.br) e à Feira de Ciências COREE 2026 por abrirem espaço para que jovens fizessem ciência de verdade — com impacto real na vida das pessoas.
+
+## Por que código aberto
+
+Tecnologia assistiva costuma ser cara e inacessível. Acreditamos que comunicação é um direito, não um privilégio — por isso liberamos **todo o código do GESTUUM** (firmware, instalador e configurador) sob licença **Apache 2.0**.
+
+Qualquer pessoa pode estudar, montar o seu, melhorar e adaptar o projeto para a própria comunidade. Se o GESTUUM ajudar uma única pessoa a ser ouvida, já terá valido a pena — e se você levar essa ideia adiante, valerá ainda mais.
 
 ## Licença
 
