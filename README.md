@@ -147,7 +147,8 @@ cd sensor_a && pio run -t uploadfs
 
 O firmware pré-compilado e o instalador web (esp-web-tools) ficam em `app/` — basta servir a pasta e gravar via cabo USB-C direto do navegador.
 
-- **Recomendado e testado:** Chrome ou Edge em **notebook/PC** (Windows, macOS ou Linux)
+- **Recomendado e testado:** **Google Chrome no Windows** (notebook/PC)
+- Edge e outros sistemas (macOS/Linux) que suportam Web Serial **devem** funcionar, mas **não foram testados**
 - iPhone/iPad **não** funcionam (Safari não suporta Web Serial)
 - Android é teoricamente possível (Chrome + adaptador OTG), mas **não foi testado**
 
